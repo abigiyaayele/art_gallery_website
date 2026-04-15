@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Great+Vibes&family=Press+Start+2P&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-cursive: "Great Vibes", cursive;
+  --font-pixel: "Press Start 2P", monospace;
+  --color-bg: var(--bg);
+  --color-text-muted: var(--text-muted);
+  --color-text-base: var(--text-base);
+  --color-text-strong: var(--text-strong);
+  --color-text-faint: var(--text-faint);
+  --color-border-color: var(--border);
+  --color-accent: var(--accent);
+  --color-action-bg: var(--action-bg);
+  --color-action-text: var(--action-text);
+  --color-marquee-bg: var(--marquee-bg);
+}
+
+/* Primary Green Theme */
+:root {
+  --bg: #1a2421;
+  --text-muted: #7a8b82;
+  --text-base: #a3b3aa;
+  --text-strong: #ffffff;
+  --text-faint: #2a3630;
+  --border: #3a4a42;
+  --accent: #4ade80;
+  --action-bg: #4ade80;
+  --action-text: #1a2421;
+  --marquee-bg: #222e2a;
+}
+
+/* Dark Theme */
+:root.dark-theme {
+  --bg: #0a0a0a;
+  --text-muted: #555555;
+  --text-base: #a0a0a0;
+  --text-strong: #d1d1d1;
+  --text-faint: #222222;
+  --border: #333333;
+  --accent: #4ade80;
+  --action-bg: #ffffff;
+  --action-text: #0a0a0a;
+  --marquee-bg: #050505;
+}
+
+/* Light Theme */
+:root.light-theme {
+  --bg: #F2F2F2;
+  --text-muted: #888888;
+  --text-base: #555555;
+  --text-strong: #111111;
+  --text-faint: #dddddd;
+  --border: #cccccc;
+  --accent: #4ade80;
+  --action-bg: #1a2421;
+  --action-text: #ffffff;
+  --marquee-bg: #e8e8e5;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-base);
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+}
+
+.marquee-content {
+  display: inline-block;
+  animation: marquee 120s linear infinite;
+  padding-right: 0.5em;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
