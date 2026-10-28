@@ -9,6 +9,8 @@ import AboutPage from './pages/AboutPage';
 import OffersPage from './pages/OffersPage';
 import CommissionPage from './pages/CommissionPage';
 import ContactPage from './pages/ContactPage';
+import DepositPage from './pages/DepositPage';
+import PaymentCompletePage from './pages/PaymentCompletePage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -22,6 +24,8 @@ export default function App() {
           <Route path="checkout/:id" element={<CheckoutPage />} />
           <Route path="offers" element={<OffersPage />} />
           <Route path="commission" element={<CommissionPage />} />
+          <Route path="commission/deposit" element={<DepositPage />} />
+          <Route path="payment/complete" element={<PaymentCompletePage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="*" element={<NotFoundPage />} />

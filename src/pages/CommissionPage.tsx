@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getArtwork } from '../data/artworks';
 import { submitForm } from '../lib/forms';
 import { PageMain } from '../components/layout/Layout';
@@ -85,6 +85,9 @@ export default function CommissionPage() {
                 </li>
               ))}
             </ol>
+            <Link to="/commission/deposit" className="inline-block text-text-strong text-xs tracking-widest underline underline-offset-4 hover:text-accent transition-colors">
+              ALREADY HAVE A QUOTE? PAY YOUR DEPOSIT &rarr;
+            </Link>
           </aside>
 
           {/* Request form */}

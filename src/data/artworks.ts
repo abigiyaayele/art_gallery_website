@@ -171,6 +171,14 @@ export const archive: ArchiveArtwork[] = [
 
 export const allArtworks: Artwork[] = [...exhibitions.flatMap(e => e.items), ...archive];
 
+/** Marks paintings sold online (reported by the payment server) as sold in the catalog. */
+export function markSold(ids: number[]) {
+  for (const id of ids) {
+    const artwork = getArtwork(id);
+    if (artwork) artwork.sold = true;
+  }
+}
+
 export function getArtwork(id: number): Artwork | undefined {
   return allArtworks.find(a => a.id === id);
 }

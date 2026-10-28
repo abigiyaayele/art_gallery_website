@@ -1,20 +1,35 @@
-import React from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { getArtwork, formatPrice, currentPrice } from '../data/artworks';
 import { PriceTag } from '../components/artwork/PriceTag';
 import { BackBar } from '../components/layout/Layout';
 import NotFoundPage from './NotFoundPage';
 import type { FromState } from './ArtworkPage';
 import { inputClass } from '../components/forms/Field';
-
+import { startArtworkCheckout } from '../lib/payments';
 
 export default function CheckoutPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const state = (useLocation().state ?? {}) as FromState;
   const artwork = getArtwork(Number(id));
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
 
   if (!artwork) return <NotFoundPage />;
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
+    setSending(true);
+    setError('');
+    try {
+      // Hand off to Chapa's hosted payment page; it returns to /payment/complete.
+      window.location.href = await startArtworkCheckout({ ...form, artworkId: artwork.id });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Payment failed to start.');
+      setSending(false);
+    }
+  };
 
   return (
     <main className="flex-1 flex flex-col relative overflow-hidden bg-bg min-h-0">
@@ -62,40 +77,40 @@ export default function CheckoutPage() {
                 </div>
               ) : (
                 <>
-                  <div className="mb-8 text-text-muted text-xs tracking-widest uppercase">// PAYMENT DETAILS</div>
-                  <form className="space-y-6 font-sans" onSubmit={(e) => { e.preventDefault(); alert('Purchase successful! (Mocked)'); navigate('/'); }}>
+                  <div className="mb-8 text-text-muted text-xs tracking-widest uppercase">// YOUR DETAILS</div>
+                  <form className="space-y-6 font-sans" onSubmit={handleSubmit}>
                     <div className="space-y-4">
                       <h3 className="text-text-strong font-bold tracking-widest text-sm uppercase">Contact Information</h3>
-                      <input type="email" placeholder="Email Address" required className={inputClass} />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <input name="firstName" type="text" placeholder="First Name" required autoComplete="given-name" className={inputClass} />
+                        <input name="lastName" type="text" placeholder="Last Name" required autoComplete="family-name" className={inputClass} />
+                      </div>
+                      <input name="email" type="email" placeholder="Email Address" required autoComplete="email" className={inputClass} />
+                      <input name="phone" type="tel" placeholder="Phone (optional)" autoComplete="tel" className={inputClass} />
                     </div>
 
                     <div className="space-y-4 pt-4 border-t border-border-color/20">
                       <h3 className="text-text-strong font-bold tracking-widest text-sm uppercase">Shipping Address</h3>
+                      <input name="address" type="text" placeholder="Address" required autoComplete="street-address" className={inputClass} />
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input type="text" placeholder="First Name" required className={inputClass} />
-                        <input type="text" placeholder="Last Name" required className={inputClass} />
+                        <input name="city" type="text" placeholder="City" required autoComplete="address-level2" className={inputClass} />
+                        <input name="postalCode" type="text" placeholder="Postal Code" autoComplete="postal-code" className={inputClass} />
                       </div>
-                      <input type="text" placeholder="Address" required className={inputClass} />
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <input type="text" placeholder="City" required className={inputClass} />
-                        <input type="text" placeholder="Postal Code" required className={inputClass} />
-                      </div>
-                      <input type="text" placeholder="Country" required className={inputClass} />
+                      <input name="country" type="text" placeholder="Country" required autoComplete="country-name" className={inputClass} />
                     </div>
 
-                    <div className="space-y-4 pt-4 border-t border-border-color/20">
-                      <h3 className="text-text-strong font-bold tracking-widest text-sm uppercase">Payment Method</h3>
-                      <input type="text" placeholder="Card Number" required className={inputClass} />
-                      <div className="grid grid-cols-2 gap-4">
-                        <input type="text" placeholder="MM/YY" required className={inputClass} />
-                        <input type="text" placeholder="CVC" required className={inputClass} />
-                      </div>
-                    </div>
-
-                    <div className="pt-8">
-                      <button type="submit" className="w-full bg-action-bg text-action-text rounded-full px-6 py-4 hover:opacity-80 transition-opacity tracking-widest text-xs font-bold uppercase">
-                        CONFIRM PURCHASE - {formatPrice(currentPrice(artwork))}
+                    <div className="pt-6 space-y-4">
+                      <button type="submit" disabled={sending} className="w-full bg-action-bg text-action-text rounded-full px-6 py-4 hover:opacity-80 transition-opacity tracking-widest text-xs font-bold uppercase disabled:opacity-50">
+                        {sending ? 'REDIRECTING TO PAYMENT...' : `PAY ${formatPrice(currentPrice(artwork))}`}
                       </button>
+                      {error && <p role="alert" className="text-red-400 text-sm text-center">{error}</p>}
+                      <p className="text-center text-text-muted text-xs">
+                        <svg className="inline-block w-3 h-3 mr-1 mb-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        You will pay securely on Chapa with Telebirr, CBE Birr, other local wallets or card.
+                      </p>
                     </div>
                   </form>
                 </>
