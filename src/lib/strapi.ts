@@ -2,6 +2,9 @@ import axios, { AxiosInstance } from 'axios';
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 
+/** True when a Strapi backend has been configured for this build. */
+export const isStrapiConfigured = Boolean(import.meta.env.VITE_STRAPI_URL);
+
 class StrapiClient {
   private api: AxiosInstance;
 
@@ -119,6 +122,18 @@ class StrapiClient {
       console.error(`Error creating ${collectionName}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Upload a file to the media library and return its id
+   */
+  async uploadFile(file: File): Promise<number> {
+    const form = new FormData();
+    form.append('files', file);
+    const response = await this.api.post('/upload', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data[0].id;
   }
 
   /**
