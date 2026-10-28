@@ -7,6 +7,8 @@ import ArtworkPage from './pages/ArtworkPage';
 import CheckoutPage from './pages/CheckoutPage';
 import AboutPage from './pages/AboutPage';
 import OffersPage from './pages/OffersPage';
+import CommissionPage from './pages/CommissionPage';
+import ContactPage from './pages/ContactPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -19,7 +21,9 @@ export default function App() {
           <Route path="art/:id" element={<ArtworkPage />} />
           <Route path="checkout/:id" element={<CheckoutPage />} />
           <Route path="offers" element={<OffersPage />} />
+          <Route path="commission" element={<CommissionPage />} />
           <Route path="about" element={<AboutPage />} />
+          <Route path="contact" element={<ContactPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

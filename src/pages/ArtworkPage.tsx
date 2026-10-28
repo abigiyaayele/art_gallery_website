@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { getArtwork } from '../data/artworks';
 import { ArtworkBadge, BuyButton, PriceTag } from '../components/artwork/PriceTag';
 import { useZoom } from '../components/layout/ZoomContext';
@@ -80,9 +80,12 @@ export default function ArtworkPage() {
                   a unique patina was achieved that cannot be replicated.
                 </p>
                 {artwork.sold && (
-                  <p className="text-text-muted italic mt-8 pt-8 border-t border-border-color/20">
-                    This piece has been acquired by a private collector.
-                  </p>
+                  <div className="mt-8 pt-8 border-t border-border-color/20 space-y-4">
+                    <p className="text-text-muted italic">This piece has been acquired by a private collector.</p>
+                    <Link to={`/commission?inspired=${artwork.id}`} className="inline-block text-text-strong text-xs tracking-widest underline underline-offset-4 hover:text-accent transition-colors">
+                      REQUEST A SIMILAR PAINTING &rarr;
+                    </Link>
+                  </div>
                 )}
               </div>
 

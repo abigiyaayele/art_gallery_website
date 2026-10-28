@@ -10,7 +10,9 @@ export const navItems = [
   { to: '/', label: 'EXHIBITION' },
   { to: '/archive', label: 'ARCHIVE' },
   { to: '/offers', label: 'OFFERS' },
+  { to: '/commission', label: 'COMMISSION' },
   { to: '/about', label: 'ABOUT' },
+  { to: '/contact', label: 'CONTACT' },
 ];
 
 function navLabel(index: number, label: string) {

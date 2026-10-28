@@ -5,8 +5,8 @@ import { PriceTag } from '../components/artwork/PriceTag';
 import { BackBar } from '../components/layout/Layout';
 import NotFoundPage from './NotFoundPage';
 import type { FromState } from './ArtworkPage';
+import { inputClass } from '../components/forms/Field';
 
-export const inputClass = "w-full bg-transparent border border-border-color rounded-none px-4 py-3 text-sm text-text-strong placeholder:text-text-muted focus:outline-none focus:border-text-strong transition-colors";
 
 export default function CheckoutPage() {
   const { id } = useParams();
@@ -53,6 +53,9 @@ export default function CheckoutPage() {
                 <div className="space-y-6 text-center md:text-left">
                   <p className="text-text-strong font-bold tracking-widest">THIS PIECE HAS BEEN SOLD</p>
                   <p className="text-sm">It is no longer available, but the artist can paint something similar for you.</p>
+                  <Link to={`/commission?inspired=${artwork.id}`} className="inline-block mr-3 mb-3 bg-action-bg text-action-text rounded-full px-8 py-3 hover:opacity-80 transition-opacity tracking-widest text-xs font-bold">
+                    REQUEST A SIMILAR PAINTING
+                  </Link>
                   <Link to="/" className="inline-block border border-border-color rounded-full px-8 py-3 hover:bg-text-strong hover:text-bg transition-colors tracking-widest text-xs font-bold">
                     BROWSE AVAILABLE WORK
                   </Link>

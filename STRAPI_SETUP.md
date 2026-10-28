@@ -57,7 +57,9 @@ In Strapi admin panel, go to **Content-Type Builder** and create these collectio
 | year        | Integer             |          |                          |
 | medium      | Short text          |          | e.g., "Oil on Canvas"    |
 | dimensions  | Short text          |          | e.g., "100x80 cm"        |
-| price       | Decimal             |          |                          |
+| price       | Decimal             |          | Regular price in USD     |
+| salePrice   | Decimal             |          | Set to put the piece on promotion |
+| sold        | Boolean             |          | Default: false. Shows the SOLD tag and disables Buy |
 | image       | Media (Single)       | ✓        |                          |
 | featured    | Boolean             |          | Default: false           |
 | gallery     | Relation (Many-to-One) |          | Link to Gallery collection |
@@ -78,6 +80,41 @@ In Strapi admin panel, go to **Content-Type Builder** and create these collectio
 
 4. Click **Save**
 
+#### C. Commission Request Collection
+
+Stores the "Request a painting" form from `/commission`.
+
+1. Click **+ Create new collection type**
+2. Name: `Commission Request` (API name `commission-requests`)
+3. Add these fields:
+
+| Field Name     | Type           | Required | Notes                         |
+|----------------|----------------|----------|-------------------------------|
+| name           | Short text     | ✓        |                               |
+| email          | Email          | ✓        |                               |
+| phone          | Short text     |          |                               |
+| idea           | Long text      | ✓        | What the painting should show |
+| style          | Short text     |          |                               |
+| medium         | Short text     |          |                               |
+| size           | Short text     | ✓        |                               |
+| colors         | Short text     |          |                               |
+| budget         | Short text     | ✓        |                               |
+| deadline       | Short text     |          | yyyy-mm-dd                    |
+| notes          | Long text      |          |                               |
+| referenceImage | Media (Single) |          | Optional upload from the form |
+
+4. Click **Save**
+
+#### D. Contact Message Collection
+
+Stores the form from `/contact`.
+
+1. Name: `Contact Message` (API name `contact-messages`)
+2. Fields: `name` (Short text, required), `email` (Email, required), `subject` (Short text), `message` (Long text, required)
+3. Click **Save**
+
+> Without `VITE_STRAPI_URL` set, both forms fall back to opening the visitor's email app addressed to the studio email in `src/data/site.ts`.
+
 ### 5. Set Up API Permissions
 
 1. Go to **Settings** → **Users & Permissions Plugin** → **Roles**
@@ -89,7 +126,11 @@ In Strapi admin panel, go to **Content-Type Builder** and create these collectio
 5. Expand **Gallery** and check:
    - ✓ find
    - ✓ findOne
-6. Click **Save**
+6. Expand **Commission-request** and **Contact-message** and check only:
+   - ✓ create
+7. Expand **Upload** and check:
+   - ✓ upload (lets visitors attach a reference image)
+8. Click **Save**
 
 ### 6. Create API Token (Optional - for authenticated requests)
 
