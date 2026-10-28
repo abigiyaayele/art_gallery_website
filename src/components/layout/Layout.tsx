@@ -9,6 +9,7 @@ type Theme = 'green' | 'dark' | 'light';
 export const navItems = [
   { to: '/', label: 'EXHIBITION' },
   { to: '/archive', label: 'ARCHIVE' },
+  { to: '/offers', label: 'OFFERS' },
   { to: '/about', label: 'ABOUT' },
 ];
 

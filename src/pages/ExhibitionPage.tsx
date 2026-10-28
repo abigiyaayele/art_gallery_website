@@ -2,7 +2,8 @@ import { MapPin } from 'lucide-react';
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { exhibitions, formatPrice } from '../data/artworks';
+import { exhibitions, promotion } from '../data/artworks';
+import { ArtworkBadge, BuyButton, PriceTag } from '../components/artwork/PriceTag';
 import { useZoom } from '../components/layout/ZoomContext';
 
 const fromExhibition = { from: '/', fromLabel: 'EXHIBITION' };
@@ -66,6 +67,9 @@ export default function ExhibitionPage() {
 
   const activeDataIndex = ((currentIndex % galleryData.length) + galleryData.length) % galleryData.length;
   const activeItem = galleryData[activeDataIndex];
+  const marqueeText = Array(20).fill(
+    `${activeGallery.isPast ? 'PAST EXHIBITION' : 'NOW EXHIBITING'} ✶ ${activeGallery.title} ✶ ${promotion.title}: ${promotion.message} ✶ `
+  ).join('');
 
   return (
     <>
@@ -120,7 +124,7 @@ export default function ExhibitionPage() {
                   >
                     <motion.div
                       whileHover={{ scale: 1.05 }}
-                      className="w-full h-full cursor-zoom-in"
+                      className="relative w-full h-full cursor-zoom-in"
                       onClick={() => zoom(item.data.image)}
                     >
                       <img
@@ -129,6 +133,7 @@ export default function ExhibitionPage() {
                         className="w-full h-full object-contain transition-all duration-500"
                         draggable={false}
                       />
+                      {isCenter && <ArtworkBadge artwork={item.data} className="absolute top-2 left-2" />}
                     </motion.div>
                   </motion.div>
                 )
@@ -144,7 +149,7 @@ export default function ExhibitionPage() {
         <div className="flex flex-col md:hidden px-4 pb-4 gap-4">
           <div className="flex justify-between items-baseline gap-4">
             <p className="text-text-strong font-bold text-sm tracking-widest truncate">{activeItem.title}</p>
-            <p className="text-accent font-bold tracking-widest text-xs whitespace-nowrap">{formatPrice(activeItem.price)}</p>
+            <PriceTag artwork={activeItem} className="text-xs whitespace-nowrap justify-end" />
           </div>
           <div className="flex justify-center gap-3">
             <Link
@@ -154,13 +159,7 @@ export default function ExhibitionPage() {
             >
               FULL STORY
             </Link>
-            <Link
-              to={`/checkout/${activeItem.id}`}
-              state={fromExhibition}
-              className="flex-1 bg-action-bg text-action-text rounded-full px-4 py-2.5 hover:opacity-80 transition-opacity tracking-widest text-[10px] font-bold text-center"
-            >
-              BUY NOW
-            </Link>
+            <BuyButton artwork={activeItem} state={fromExhibition} className="flex-1 py-2.5 px-4 text-[10px]" />
           </div>
         </div>
 
@@ -180,7 +179,7 @@ export default function ExhibitionPage() {
           </div>
           <div className="col-span-1">
             <div className="mb-2 text-text-muted text-xs">// ACQUISITION</div>
-            <p className="text-accent font-bold tracking-widest text-sm">{formatPrice(activeItem.price)}</p>
+            <PriceTag artwork={activeItem} className="text-sm" />
           </div>
           <div className="col-span-1 flex flex-col justify-start items-end gap-2">
             <Link
@@ -190,13 +189,7 @@ export default function ExhibitionPage() {
             >
               DISCOVER FULL STORY
             </Link>
-            <Link
-              to={`/checkout/${activeItem.id}`}
-              state={fromExhibition}
-              className="w-full max-w-[196px] text-center bg-action-bg text-action-text rounded-full px-6 py-2.5 hover:opacity-80 transition-opacity tracking-widest text-[11px] font-bold"
-            >
-              BUY NOW
-            </Link>
+            <BuyButton artwork={activeItem} state={fromExhibition} className="w-full max-w-[196px] px-6 py-2.5 text-[11px]" />
           </div>
         </div>
 
@@ -270,14 +263,10 @@ export default function ExhibitionPage() {
         </div>
 
         {/* Marquee */}
-        <div className={`marquee-container block border-t border-border-color py-1.5 text-[10px] tracking-[0.2em] text-text-muted bg-marquee-bg uppercase ${activeGallery.isPast ? 'invisible' : ''}`}>
-          <div className="marquee-content">
-            {Array(20).fill(`${activeGallery.isPast ? 'PAST EXHIBITION' : 'NOW EXHIBITING'} ✶ ${activeGallery.title} ✶ ${activeGallery.location} ✶ `).join("")}
-          </div>
-          <div className="marquee-content" aria-hidden="true">
-            {Array(20).fill(`${activeGallery.isPast ? 'PAST EXHIBITION' : 'NOW EXHIBITING'} ✶ ${activeGallery.title} ✶ ${activeGallery.location} ✶ `).join("")}
-          </div>
-        </div>
+        <Link to="/offers" className="marquee-container block border-t border-border-color py-1.5 text-[10px] tracking-[0.2em] text-text-muted bg-marquee-bg hover:text-text-strong transition-colors uppercase">
+          <div className="marquee-content">{marqueeText}</div>
+          <div className="marquee-content" aria-hidden="true">{marqueeText}</div>
+        </Link>
       </footer>
     </>
   );

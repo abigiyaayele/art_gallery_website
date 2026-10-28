@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { archive } from '../data/artworks';
 import { useZoom } from '../components/layout/ZoomContext';
+import { ArtworkBadge } from '../components/artwork/PriceTag';
 
 export default function ArchivePage() {
   const zoom = useZoom();
@@ -48,6 +49,7 @@ export default function ArchivePage() {
                           zoom(item.image);
                         }}
                       />
+                      <ArtworkBadge artwork={item} className="absolute top-1.5 left-1.5" />
                     </div>
                     <div className="opacity-100 [@media(hover:hover)]:opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center bg-bg/80 px-3 py-1 rounded-full backdrop-blur-sm mt-2">
                       <span className="font-sans text-text-strong text-xs md:text-sm tracking-widest uppercase">{item.title}</span>

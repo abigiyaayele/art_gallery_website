@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Link, useLocation, useParams } from 'react-router-dom';
-import { getArtwork, formatPrice } from '../data/artworks';
+import { useLocation, useParams } from 'react-router-dom';
+import { getArtwork } from '../data/artworks';
+import { ArtworkBadge, BuyButton, PriceTag } from '../components/artwork/PriceTag';
 import { useZoom } from '../components/layout/ZoomContext';
 import { BackBar } from '../components/layout/Layout';
 import NotFoundPage from './NotFoundPage';
@@ -19,15 +20,7 @@ export default function ArtworkPage() {
 
   if (!artwork) return <NotFoundPage />;
 
-  const buyButton = (className: string) => (
-    <Link
-      to={`/checkout/${artwork.id}`}
-      state={{ from: `/art/${artwork.id}`, fromLabel: 'STORY' }}
-      className={`block text-center bg-action-bg text-action-text rounded-full px-6 hover:opacity-80 transition-opacity tracking-widest text-[11px] font-bold ${className}`}
-    >
-      BUY NOW
-    </Link>
-  );
+  const buyState = { from: `/art/${artwork.id}`, fromLabel: 'STORY' };
 
   return (
     <main className="flex-1 flex flex-col relative overflow-hidden bg-bg min-h-0">
@@ -47,10 +40,10 @@ export default function ArtworkPage() {
             </div>
             <div>
               <div className="mb-2 text-text-muted text-xs">// ACQUISITION</div>
-              <p className="text-accent font-bold tracking-widest text-sm">{artwork.sold ? 'SOLD' : formatPrice(artwork.price)}</p>
+              <PriceTag artwork={artwork} className="text-sm" />
             </div>
             <div className="hidden md:flex flex-col justify-center items-end">
-              {!artwork.sold && buyButton('w-48 py-2.5')}
+              <BuyButton artwork={artwork} state={buyState} className="w-48 px-6 py-2.5 text-[11px]" />
             </div>
           </div>
         </div>
@@ -71,6 +64,7 @@ export default function ArtworkPage() {
                 className="w-full h-full object-contain transition-transform duration-500 hover:scale-105"
                 draggable={false}
               />
+              <ArtworkBadge artwork={artwork} className="absolute top-3 left-3" />
             </motion.div>
           </div>
 
@@ -93,7 +87,9 @@ export default function ArtworkPage() {
               </div>
 
               {/* Mobile Bottom Buy Button */}
-              {!artwork.sold && <div className="mt-12 md:hidden">{buyButton('w-full py-4')}</div>}
+              <div className="mt-12 md:hidden">
+                <BuyButton artwork={artwork} state={buyState} className="w-full px-6 py-4 text-[11px]" />
+              </div>
             </div>
           </div>
         </div>

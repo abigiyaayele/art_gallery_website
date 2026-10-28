@@ -6,6 +6,7 @@ import ArchivePage from './pages/ArchivePage';
 import ArtworkPage from './pages/ArtworkPage';
 import CheckoutPage from './pages/CheckoutPage';
 import AboutPage from './pages/AboutPage';
+import OffersPage from './pages/OffersPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="archive" element={<ArchivePage />} />
           <Route path="art/:id" element={<ArtworkPage />} />
           <Route path="checkout/:id" element={<CheckoutPage />} />
+          <Route path="offers" element={<OffersPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

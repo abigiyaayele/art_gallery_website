@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { getArtwork, formatPrice } from '../data/artworks';
+import { getArtwork, formatPrice, currentPrice } from '../data/artworks';
+import { PriceTag } from '../components/artwork/PriceTag';
 import { BackBar } from '../components/layout/Layout';
 import NotFoundPage from './NotFoundPage';
 import type { FromState } from './ArtworkPage';
@@ -39,7 +40,7 @@ export default function CheckoutPage() {
                 </div>
                 <div>
                   <div className="text-text-muted text-xs mb-1">// PRICE</div>
-                  <div className="text-accent font-bold text-base md:text-xl tracking-widest">{formatPrice(artwork.price)}</div>
+                  <PriceTag artwork={artwork} className="text-base md:text-xl" />
                 </div>
               </div>
             </div>
@@ -90,7 +91,7 @@ export default function CheckoutPage() {
 
                     <div className="pt-8">
                       <button type="submit" className="w-full bg-action-bg text-action-text rounded-full px-6 py-4 hover:opacity-80 transition-opacity tracking-widest text-xs font-bold uppercase">
-                        CONFIRM PURCHASE - {formatPrice(artwork.price)}
+                        CONFIRM PURCHASE - {formatPrice(currentPrice(artwork))}
                       </button>
                     </div>
                   </form>
