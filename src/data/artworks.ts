@@ -1,12 +1,15 @@
 /**
- * Local artwork catalog. This is the fallback content the site shows when no
- * Strapi backend is configured (VITE_STRAPI_URL unset).
+ * Seifu's paintings. Edit titles, stories, sizes, prices, sale prices and
+ * sold status here. Photos live in public/paintings/ (a full-size image and a
+ * smaller "-thumb" version for grids).
  */
 
 export interface Artwork {
   id: number;
   title: string;
   image: string;
+  /** Smaller version of the image for grids and lists. */
+  thumb: string;
   /** Short lines shown under the exhibition carousel. */
   details: string[];
   /** Longer story shown on the artwork page. */
@@ -36,22 +39,23 @@ export interface ArchiveArtwork extends Artwork {
   width: string;
 }
 
-function exhibitionItem(
+function painting(
   collection: string,
   id: number,
-  image: string,
+  file: string,
   title: string,
   details: string[],
   price: number,
-  extra: Partial<Pick<Artwork, 'salePrice' | 'sold'>> = {},
+  extra: Partial<Pick<Artwork, 'salePrice' | 'sold' | 'dimensions'>> = {},
 ): Artwork {
   return {
     id,
     title,
-    image,
+    image: `/paintings/${file}.jpg`,
+    thumb: `/paintings/${file}-thumb.jpg`,
     details,
     story: details.join(' '),
-    dimensions: '100cm x 100cm',
+    dimensions: 'Size on request',
     price,
     sold: false,
     collection,
@@ -61,121 +65,215 @@ function exhibitionItem(
 
 export const exhibitions: Exhibition[] = [
   {
-    slug: 'floral',
-    title: 'Floral',
-    genre: 'SCI-FI / BOTANICAL',
-    date: 'OCT 12 - NOV 24, 2025',
-    location: 'NEO-TOKYO SECTOR 4',
+    slug: 'forest',
+    title: 'Forest',
+    genre: 'ACRYLIC ON CANVAS',
+    date: 'NEW WORK',
+    location: 'ADDIS ABABA',
     isPast: false,
     items: [
-      exhibitionItem('Floral', 1, 'https://picsum.photos/seed/art1/800/800', 'VENENATA PULCHRITUDO', [
-        'A rare specimen found in the ruins of Sector 4.',
-        'Exhibits bioluminescent properties when exposed to toxins.',
-        'Requires a specialized containment unit.',
-      ], 45000),
-      exhibitionItem('Floral', 2, 'https://picsum.photos/seed/art2/800/800', 'URBAN OVERGROWTH', [
-        'The concrete has been completely consumed.',
-        'Nature reclaims what was once a bustling metropolis.',
-        'Contains traces of ancient synthetic materials.',
-      ], 32500, { salePrice: 26000 }),
-      exhibitionItem('Floral', 3, 'https://picsum.photos/seed/art3/800/800', 'SYNTHETIC BLOOM', [
-        'Artificial petals that mimic organic life.',
-        'Powered by a micro-fusion core.',
-        'Never wilts, never dies.',
-      ], 88000),
-      exhibitionItem('Floral', 4, 'https://picsum.photos/seed/art4/800/800', 'TOXIC BEAUTY', [
-        'Beautiful but deadly to the touch.',
-        'Emits a faint humming sound.',
-        'Handle only with Class-4 protective gear.',
-      ], 115000, { sold: true }),
-      exhibitionItem('Floral', 5, 'https://picsum.photos/seed/art5/800/800', 'ECHOES OF EARTH', [
-        'A memory of a world that no longer exists.',
-        'Preserved in a stasis field.',
-        'The last of its kind.',
-      ], 250000),
+      painting('Forest', 1, 'forest-procession', 'FOREST PROCESSION', [
+        'Women with bright umbrellas walk through a tall green forest.',
+        'Butterflies and white birds circle around them.',
+        'Light opens up between the trees ahead.',
+      ], 2400),
+      painting('Forest', 2, 'green-cathedral', 'GREEN CATHEDRAL', [
+        'A line of travellers passes under a great arch of trees.',
+        'The forest glows brighter towards the centre.',
+        'A flock of white birds rises over the path.',
+      ], 2600, { salePrice: 2080 }),
+      painting('Forest', 3, 'gathering-of-birds', 'GATHERING OF BIRDS', [
+        'A small group stands together in a quiet clearing.',
+        'Hundreds of white birds gather in the air around them.',
+        'Deep green layers stretch to the horizon.',
+      ], 2200),
+      painting('Forest', 4, 'market-morning', 'MARKET MORNING', [
+        'Women carrying baskets walk between two proud roosters.',
+        'Umbrellas in yellow and orange shade them from the sun.',
+        'The forest opens like a doorway behind them.',
+      ], 2800),
+      painting('Forest', 5, 'three-umbrellas', 'THREE UMBRELLAS', [
+        'Three figures under red and orange umbrellas.',
+        'Tall dark trees rise behind them.',
+        'Small white birds drift across the canvas.',
+      ], 1900, { sold: true }),
+      painting('Forest', 6, 'under-the-vines', 'UNDER THE VINES', [
+        'A family walks beneath hanging green vines.',
+        'Leaves fall like rain around them.',
+        'Their colourful clothes shine against the dark forest.',
+      ], 2300),
+      painting('Forest', 7, 'forest-light', 'FOREST LIGHT', [
+        'A small group under umbrellas in a vast green field of leaves.',
+        'Light falls softly from above.',
+        'Every leaf is painted by hand.',
+      ], 2100),
+      painting('Forest', 8, 'quiet-clearing', 'QUIET CLEARING', [
+        'Two companions shelter under umbrellas in a bright clearing.',
+        'Birds rise from the grass around them.',
+        'Layers of green fill the whole canvas.',
+      ], 2000),
+      painting('Forest', 9, 'falling-leaves', 'FALLING LEAVES', [
+        'Two small figures stand under a shower of green leaves.',
+        'Vines arch high above them.',
+        'A quiet, glowing moment in the forest.',
+      ], 1800, { salePrice: 1440 }),
+      painting('Forest', 17, 'dark-forest-walk', 'DARK FOREST WALK', [
+        'Three small figures with umbrellas under a glowing arch of leaves.',
+        'White birds fly up through the dark forest.',
+        'Ferns fill the ground in front of them.',
+      ], 2000),
+      painting('Forest', 18, 'the-long-procession', 'THE LONG PROCESSION', [
+        'A long line of people in colourful clothes crosses a clearing.',
+        'Some carry umbrellas, some carry baskets.',
+        'A ring of white birds frames the whole crowd.',
+      ], 3200),
+      painting('Forest', 19, 'birds-over-the-field', 'BIRDS OVER THE FIELD', [
+        'Four friends under umbrellas stand at the edge of a field.',
+        'A great flock of white birds sweeps across the sky.',
+        'Bright greens glow against the dark trees.',
+      ], 2300),
+      painting('Forest', 20, 'journey-by-night', 'JOURNEY BY NIGHT', [
+        'A mother, a child and a laden donkey travel under a blue night sky.',
+        'Countless white birds glow in the darkness.',
+        'Tall green plants line the path home.',
+      ], 2500),
+      painting('Forest', 21, 'forest-doorway', 'FOREST DOORWAY', [
+        'A small family stands in a doorway of light among tall trees.',
+        'White birds circle above them.',
+        'Calm, cool greens fill the canvas.',
+      ], 2100),
+      painting('Forest', 22, 'highland-farms', 'HIGHLAND FARMS', [
+        'Terraced green hills with farmers and grazing cows.',
+        'A flock of birds rises over the forest edge.',
+        'A view of life in the Ethiopian highlands.',
+      ], 2900),
+      painting('Forest', 23, 'the-green-moon', 'THE GREEN MOON', [
+        'Travellers and a donkey walk under a glowing green moon.',
+        'Vines and birds fill the night forest.',
+        'A quiet journey through the dark.',
+      ], 2600),
     ],
   },
   {
-    slug: 'neon',
-    title: 'Neon',
-    genre: 'CYBERPUNK / URBAN',
-    date: 'DEC 01 - JAN 15, 2027',
-    location: 'UNDERGROUND ARCHIVES',
+    slug: 'garden',
+    title: 'Garden',
+    genre: 'ACRYLIC ON CANVAS',
+    date: 'EARLIER WORK',
+    location: 'ADDIS ABABA',
     isPast: true,
     items: [
-      exhibitionItem('Neon', 6, 'https://picsum.photos/seed/neon1/800/800', 'CHROMATIC DRIFTER', [
-        'Recovered from the lower levels of Neo-Tokyo.',
-        'Constantly shifting color spectrum.',
-        'Emits a low-frequency hum.',
-      ], 22000),
-      exhibitionItem('Neon', 7, 'https://picsum.photos/seed/neon2/800/800', 'SYNTH-WAVE', [
-        'A physical manifestation of sound.',
-        'Reacts to audio input in real-time.',
-        'Fragile crystalline structure.',
-      ], 64000, { salePrice: 48000 }),
-      exhibitionItem('Neon', 8, 'https://picsum.photos/seed/neon3/800/800', 'NEURAL NET', [
-        'An obsolete AI core.',
-        'Still processes fragmented memories.',
-        'Handle with extreme caution.',
-      ], 150000),
-      exhibitionItem('Neon', 9, 'https://picsum.photos/seed/neon4/800/800', 'HOLOGRAPHIC ECHO', [
-        'A glitch in the visual spectrum.',
-        'Appears differently to each observer.',
-        'Cannot be captured on standard cameras.',
-      ], 89000, { sold: true }),
-      exhibitionItem('Neon', 10, 'https://picsum.photos/seed/neon5/800/800', 'VOID FRAGMENT', [
-        'Origin unknown.',
-        'Absorbs all surrounding light.',
-        'Cold to the touch.',
-      ], 300000),
+      painting('Garden', 10, 'butterfly-women', 'BUTTERFLY WOMEN', [
+        'Two women with butterfly wings among blooming flowers.',
+        'Bright reds, pinks and greens on a deep blue ground.',
+        'A celebration of beauty and freedom.',
+      ], 2700),
+      painting('Garden', 11, 'red-umbrella', 'THE RED UMBRELLA', [
+        'Two women walk through a garden of flowers and butterflies.',
+        'One carries a red umbrella against the sun.',
+        'Patterned leaves fill every corner.',
+      ], 2700, { sold: true }),
+      painting('Garden', 12, 'blue-garden', 'BLUE GARDEN', [
+        'A woman and a white bird meet under a glowing blue arch.',
+        'Trees and leaves are drawn in fine detail.',
+        'A dreamlike night garden.',
+      ], 2500, { salePrice: 2000 }),
+      painting('Garden', 13, 'the-bath', 'THE BATH', [
+        'A woman rests in a bathtub in the middle of a garden.',
+        'A single lamp glows above her.',
+        'Flowers, cats and clay pots surround the scene.',
+      ], 2400),
+      painting('Garden', 14, 'woman-with-cat', 'WOMAN WITH CAT', [
+        'A woman stands beside a tall clay pot where a black cat sits.',
+        'An orange fruit hangs from a branch above.',
+        'Fine white lines fill the dark background.',
+      ], 2200),
+      painting('Garden', 15, 'woman-with-rooster', 'WOMAN WITH ROOSTER', [
+        'A woman holds up a rooster while chicks gather at her feet.',
+        'Her red dress is covered in white dots.',
+        'Painted on a ground of delicate silver leaves.',
+      ], 2200),
+      painting('Garden', 16, 'the-crossing', 'THE CROSSING', [
+        'Hundreds of tiny figures cross a misty grey landscape.',
+        'Small umbrellas add points of colour.',
+        'A study of people moving together.',
+      ], 3000),
+      painting('Garden', 24, 'three-sisters-and-the-crane', 'THREE SISTERS AND THE CRANE', [
+        'Three women in bright dresses stand among blue trees.',
+        'A white crane and a flock of birds fly above them.',
+        'Flowers and butterflies bloom at their feet.',
+      ], 2800),
+      painting('Garden', 25, 'coral-procession', 'CORAL PROCESSION', [
+        'A line of people with umbrellas walks under a coral sky.',
+        'White birds swirl through blue branches.',
+        'Warm oranges and cool blues meet on the canvas.',
+      ], 2400),
+      painting('Garden', 26, 'woman-with-hen', 'WOMAN WITH HEN', [
+        'Two women stand in a lime-green garden, one holding a hen.',
+        'Chicks and round flowers gather at their feet.',
+        'Patterned dresses in purple and red.',
+      ], 2500),
+      painting('Garden', 27, 'the-white-cranes', 'THE WHITE CRANES', [
+        'A woman with an orange umbrella walks between two white cranes.',
+        'A blue chequered floor leads into a garden of green flowers.',
+        'Playful and dreamlike.',
+      ], 2600),
+      painting('Garden', 28, 'reflection', 'REFLECTION', [
+        'A lone figure and a swan are mirrored in a still green pond.',
+        'Tall vines rise behind them.',
+        'A calm and quiet scene.',
+      ], 2000),
+      painting('Garden', 29, 'pink-forest', 'PINK FOREST', [
+        'Four figures with umbrellas stand under a pink and violet arch.',
+        'White birds rise around them.',
+        'A forest painted in sunset colours.',
+      ], 2300),
+      painting('Garden', 30, 'cactus-garden', 'CACTUS GARDEN', [
+        'Three women stand among tall green cacti.',
+        'Butterflies and a ladybird rest among red flowers.',
+        'Bold patterns on a bright lime ground.',
+      ], 2700),
+      painting('Garden', 31, 'the-flamingo', 'THE FLAMINGO', [
+        'A woman reaches up as a pink flamingo flies over her.',
+        'Dark green vines curl across a teal background.',
+        'Graceful and full of movement.',
+      ], 2400),
+      painting('Garden', 32, 'rooster-ride', 'ROOSTER RIDE', [
+        'A child with an umbrella rides on the back of a proud rooster.',
+        'White birds fly overhead.',
+        'A joyful, playful painting.',
+      ], 2200),
+      painting('Garden', 33, 'three-women-in-blue', 'THREE WOMEN IN BLUE', [
+        'Three women stand together under a deep blue sky.',
+        'A white bird and a dragonfly fly above them.',
+        'Simple, strong shapes and rich colour.',
+      ], 2600),
+      painting('Garden', 34, 'woman-in-the-flowers', 'WOMAN IN THE FLOWERS', [
+        'A woman smells a flower, almost hidden in a wall of leaves.',
+        'Pink and blue blossoms are scattered all around.',
+        'A peaceful garden portrait.',
+      ], 2500),
+      painting('Garden', 35, 'violet-arch', 'VIOLET ARCH', [
+        'Five figures with umbrellas stand under a lilac archway.',
+        'A bright green light glows behind them.',
+        'Birds fall softly like snow.',
+      ], 2300),
     ],
   },
 ];
 
-function archiveItem(id: number, title: string, story: string, width: string, price: number, sold: boolean, salePrice?: number): ArchiveArtwork {
-  return {
-    id,
-    title,
-    image: `https://picsum.photos/seed/arch${id - 100}/800/800`,
-    details: [],
-    story,
-    dimensions: '100cm x 100cm',
-    price,
-    salePrice,
-    sold,
-    collection: 'Archive Collection',
-    width,
-  };
-}
+const archiveWidths = ['250px', '200px', '180px', '220px', '150px', '190px', '210px', '170px'];
 
-export const archive: ArchiveArtwork[] = [
-  archiveItem(101, 'FLORAL', 'The floral series was an exploration of organic decay and synthetic rebirth. Each piece was carefully cultivated in a controlled environment before being crystallized in resin.', '250px', 12000, true),
-  archiveItem(102, 'ECHO', 'Echo represents the sound of silence in a post-apocalyptic world. The visual representation of a soundwave that no longer exists.', '200px', 8500, false, 6800),
-  archiveItem(103, 'VOID', 'A deep dive into the nothingness. Void was created using a proprietary light-absorbing pigment that reflects zero photons.', '180px', 15000, true),
-  archiveItem(104, 'SYNTH', 'Synthetic lifeforms captured in stasis. This piece explores the boundary between artificial intelligence and organic consciousness.', '220px', 22000, false),
-  archiveItem(105, 'NEON', "The bright lights of the underground. Neon captures the chaotic energy of Neo-Tokyo's lower sectors.", '150px', 6000, true),
-  archiveItem(106, 'RUST', 'Decay as a form of beauty. Rust is a study of oxidation on ancient metallic structures found in the wasteland.', '120px', 4500, false, 3600),
-  archiveItem(107, 'CHROME', "Reflections of a metallic future. Chrome uses highly polished surfaces to distort the viewer's perception of space.", '160px', 18000, true),
-  archiveItem(108, 'DUST', 'What remains after the storm. Dust is composed of actual particulate matter collected from the upper atmosphere.', '190px', 9000, false),
-  archiveItem(109, 'FRACTAL', 'A mathematical anomaly rendered in physical space. Fractal explores the infinite complexity hidden within simple equations.', '210px', 25000, true),
-  archiveItem(110, 'PRISM', 'Light bent and fractured into its component parts. Prism serves as a reminder of the spectrum of possibilities that exist just beyond our perception.', '170px', 11500, false),
-  archiveItem(111, 'MONOLITH', 'A monument to forgotten gods. Monolith stands as a testament to the enduring power of belief in a secular age.', '140px', 35000, true),
-  archiveItem(112, 'AETHER', 'Capturing the invisible currents of energy that flow through the universe. Aether visualizes the unseen forces that connect us all.', '130px', 14000, false, 10500),
-  archiveItem(113, 'PULSE', 'The heartbeat of a dying star. Pulse translates cosmic radiation into a visual rhythm that resonates with the viewer.', '160px', 19500, true),
-  archiveItem(114, 'MIRAGE', 'An illusion of water in a desert of data. Mirage challenges our perception of reality in an increasingly digital world.', '180px', 7500, false),
-  archiveItem(115, 'NEXUS', 'The point where all timelines converge. Nexus represents the singularity at the center of the multiverse.', '200px', 42000, true),
-  archiveItem(116, 'ZENITH', 'The highest point of achievement. Zenith is a celebration of human potential and the relentless pursuit of perfection.', '150px', 28000, false),
-  archiveItem(117, 'ABYSS', 'A glimpse into the darkest depths of the ocean. Abyss reveals the strange and terrifying creatures that lurk in the shadows.', '170px', 16500, true),
-  archiveItem(118, 'ECLIPSE', 'The moment when the sun is obscured by the moon. Eclipse captures the awe and terror of a celestial event.', '190px', 13000, false),
-];
+/** Every painting, shown on the Archive page. */
+export const archive: ArchiveArtwork[] = exhibitions
+  .flatMap(e => e.items)
+  .map((artwork, i) => ({ ...artwork, width: archiveWidths[i % archiveWidths.length] }));
 
-export const allArtworks: Artwork[] = [...exhibitions.flatMap(e => e.items), ...archive];
+export const allArtworks: Artwork[] = exhibitions.flatMap(e => e.items);
 
 /** Marks paintings sold online (reported by the payment server) as sold in the catalog. */
 export function markSold(ids: number[]) {
-  for (const id of ids) {
-    const artwork = getArtwork(id);
-    if (artwork) artwork.sold = true;
+  for (const artwork of [...allArtworks, ...archive]) {
+    if (ids.includes(artwork.id)) artwork.sold = true;
   }
 }
 
@@ -186,7 +284,7 @@ export function getArtwork(id: number): Artwork | undefined {
 /** The current store-wide promotion, shown in the marquee and on the offers page. */
 export const promotion = {
   title: 'Season Promotion',
-  message: 'Selected paintings up to 25% off',
+  message: 'Selected paintings up to 20% off',
   endsOn: 'NOV 30, 2026',
 };
 

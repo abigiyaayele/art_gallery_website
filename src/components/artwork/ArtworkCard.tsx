@@ -9,7 +9,7 @@ export function ArtworkCard({ artwork, from, fromLabel }: { artwork: Artwork; fr
     <Link to={`/art/${artwork.id}`} state={{ from, fromLabel }} className="group flex flex-col gap-3">
       <div className="relative aspect-square overflow-hidden bg-border-color/20">
         <img
-          src={artwork.image}
+          src={artwork.thumb}
           alt={artwork.title}
           loading="lazy"
           className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${artwork.sold ? 'opacity-60 grayscale' : ''}`}
