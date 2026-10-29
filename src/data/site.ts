@@ -1,6 +1,6 @@
 /** Contact details and studio info shown on the About and Contact pages. Replace with the real ones. */
 export const site = {
-  painter: 'Aris Seifu',
+  painter: 'Seifu',
   email: 'contact@seifuarts.net',
   phone: '+251 900 000 000',
   address: ['Seifu Arts Studio', 'Bole, Addis Ababa', 'Ethiopia'],

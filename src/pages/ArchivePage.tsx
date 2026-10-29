@@ -41,7 +41,7 @@ export default function ArchivePage() {
                   >
                     <div className="relative w-full aspect-square overflow-hidden mb-3">
                       <img
-                        src={item.image}
+                        src={item.thumb}
                         alt={item.title}
                         className="w-full h-full object-cover transition-all duration-500 hover:scale-110 cursor-zoom-in"
                         onClick={(e) => {

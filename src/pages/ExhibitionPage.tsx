@@ -128,7 +128,7 @@ export default function ExhibitionPage() {
                       onClick={() => zoom(item.data.image)}
                     >
                       <img
-                        src={item.data.image}
+                        src={isCenter ? item.data.image : item.data.thumb}
                         alt={item.data.title}
                         className="w-full h-full object-contain transition-all duration-500"
                         draggable={false}

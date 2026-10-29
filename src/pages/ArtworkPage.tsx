@@ -74,11 +74,6 @@ export default function ArtworkPage() {
               <div className="mb-8 text-text-muted text-xs tracking-widest uppercase">// THE STORY</div>
               <div className="text-sm md:text-base leading-relaxed text-text-base space-y-6 font-sans">
                 <p>{artwork.story}</p>
-                <p>
-                  This piece represents a pivotal moment in the artist's exploration of synthetic-organic synthesis.
-                  By isolating the core structural elements and exposing them to controlled environmental stressors,
-                  a unique patina was achieved that cannot be replicated.
-                </p>
                 {artwork.sold && (
                   <div className="mt-8 pt-8 border-t border-border-color/20 space-y-4">
                     <p className="text-text-muted italic">This piece has been acquired by a private collector.</p>
