@@ -33,8 +33,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export default function AboutPage() {
   const zoom = useZoom();
   const selectedWorks = allArtworks.filter(a => !a.sold).slice(0, 4);
-  // Shown until a photo of Seifu is added.
-  const portrait = allArtworks[0].image;
+  const portrait = '/seifu/seifu-portrait.jpg';
 
   return (
     <PageMain>
@@ -46,7 +45,7 @@ export default function AboutPage() {
           className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center"
         >
           <div className="aspect-[4/5] bg-border-color/20 overflow-hidden cursor-zoom-in" onClick={() => zoom(portrait)}>
-            <img src={portrait} alt={`Painting by ${site.painter}`} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
+            <img src={portrait} alt={site.painter} className="w-full h-full object-cover object-[65%_center] transition-transform duration-500 hover:scale-105" />
           </div>
           <div className="space-y-6">
             <p className="text-text-muted text-xs tracking-widest uppercase">// About the painter</p>
@@ -90,6 +89,12 @@ export default function AboutPage() {
         {/* Exhibitions */}
         <section className="space-y-8">
           <SectionTitle>EXHIBITIONS</SectionTitle>
+          <figure className="space-y-3">
+            <div className="aspect-[4/3] md:aspect-[16/9] overflow-hidden bg-border-color/20 cursor-zoom-in" onClick={() => zoom('/seifu/seifu-exhibition.jpg')}>
+              <img src="/seifu/seifu-exhibition.jpg" alt={`${site.painter} at an exhibition of his paintings`} loading="lazy" className="w-full h-full object-cover object-[center_35%] transition-transform duration-500 hover:scale-105" />
+            </div>
+            <figcaption className="text-text-muted text-xs tracking-widest uppercase">{site.painter} with his paintings at an exhibition</figcaption>
+          </figure>
           <ul className="divide-y divide-border-color/50 border-y border-border-color/50">
             {exhibitions.map(e => (
               <li key={e.slug} className="grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-4 py-4 text-xs tracking-widest uppercase">
