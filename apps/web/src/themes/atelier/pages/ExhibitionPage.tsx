@@ -203,7 +203,7 @@ export default function ExhibitionPage() {
         <div className="flex justify-between items-end px-4 md:px-6 pb-4">
           <div className="flex flex-col min-w-0">
             <div className="flex items-stretch gap-4 md:gap-6">
-              <h1 className="font-cursive text-6xl sm:text-7xl md:text-9xl text-text-strong leading-none tracking-normal">{activeGallery.title}</h1>
+              <h1 className="font-cursive text-4xl sm:text-5xl md:text-7xl text-text-strong leading-none tracking-normal">{activeGallery.title}</h1>
               <div className="flex flex-col items-start justify-between py-1 md:py-2">
                 {!activeGallery.isPast ? (
                   <span className="flex items-center gap-1 text-text-strong tracking-widest text-[10px] md:text-xs whitespace-nowrap">
