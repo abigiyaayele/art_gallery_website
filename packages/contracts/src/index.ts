@@ -1,3 +1,5 @@
 export * from './common.js';
 export * from './auth.js';
 export * from './tenancy.js';
+export * from './media.js';
+export * from './catalog.js';

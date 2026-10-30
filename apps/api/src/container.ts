@@ -1,5 +1,14 @@
 import type { Config } from './shared/config.js';
 import type { Db } from './shared/db/database.js';
+import { InlineJobQueue, PgBossJobQueue, type JobQueue } from './shared/jobs/queue.js';
+import type { ArtworkImages } from './modules/catalog/application/ports.js';
+import { ArtworkPresenter } from './modules/catalog/application/presenter.js';
+import * as catalog from './modules/catalog/application/use-cases.js';
+import {
+  CatalogAssetVisibility,
+  KyselyArtworkRepository,
+  KyselyCategoryRepository,
+} from './modules/catalog/infrastructure/repositories.js';
 import { SessionIssuer } from './modules/identity/application/session-issuer.js';
 import * as identity from './modules/identity/application/use-cases.js';
 import { Argon2Hasher, JoseAccessTokenService } from './modules/identity/infrastructure/crypto.js';
@@ -8,14 +17,44 @@ import {
   KyselyRefreshTokenRepository,
   KyselyUserRepository,
 } from './modules/identity/infrastructure/repositories.js';
+import type { AssetVisibility, ObjectStorage } from './modules/media/application/ports.js';
+import { AssetUrlSigner } from './modules/media/application/url-signer.js';
+import * as media from './modules/media/application/use-cases.js';
+import { KyselyAssetRepository } from './modules/media/infrastructure/asset-repository.js';
+import { MemoryObjectStorage, S3ObjectStorage } from './modules/media/infrastructure/object-storage.js';
+import { SharpImageProcessor } from './modules/media/infrastructure/sharp-image-processor.js';
 import * as tenancy from './modules/tenancy/application/use-cases.js';
 import { KyselyDomainRepository, KyselyTenantRepository } from './modules/tenancy/infrastructure/repositories.js';
 
+export interface Infrastructure {
+  storage: ObjectStorage;
+  jobs: JobQueue;
+}
+
+export function defaultInfrastructure(config: Config): Infrastructure {
+  return {
+    storage:
+      config.STORAGE_DRIVER === 'memory'
+        ? new MemoryObjectStorage()
+        : new S3ObjectStorage({
+            endpoint: config.S3_ENDPOINT,
+            region: config.S3_REGION,
+            accessKeyId: config.S3_ACCESS_KEY,
+            secretAccessKey: config.S3_SECRET_KEY,
+            bucket: config.S3_BUCKET,
+          }),
+    jobs: config.JOB_DRIVER === 'inline' ? new InlineJobQueue() : new PgBossJobQueue(config.DATABASE_URL),
+  };
+}
+
 /**
  * Composition root: the one place that picks concrete adapters for each port
- * and wires use cases. Tests build the same graph with fakes where needed.
+ * and wires use cases. Tests pass in-memory infrastructure.
  */
-export function buildContainer(config: Config, db: Db) {
+export function buildContainer(config: Config, db: Db, infra: Infrastructure = defaultInfrastructure(config)) {
+  const { storage, jobs } = infra;
+
+  // Identity
   const users = new KyselyUserRepository(db);
   const memberships = new KyselyMembershipRepository(db);
   const refreshTokens = new KyselyRefreshTokenRepository(db);
@@ -23,11 +62,47 @@ export function buildContainer(config: Config, db: Db) {
   const tokens = new JoseAccessTokenService(config.JWT_SECRET, config.ACCESS_TOKEN_TTL_SECONDS);
   const issuer = new SessionIssuer(memberships, refreshTokens, tokens, config.ACCESS_TOKEN_TTL_SECONDS, config.REFRESH_TOKEN_TTL_DAYS);
 
+  // Tenancy
   const tenants = new KyselyTenantRepository(db);
   const domains = new KyselyDomainRepository(db);
   const resolver = new tenancy.TenantResolver(domains);
 
+  // Media
+  const assets = new KyselyAssetRepository(db);
+  const imageProcessor = new SharpImageProcessor();
+  const signer = new AssetUrlSigner(config.JWT_SECRET, config.PUBLIC_API_URL);
+  const assetPresenter = new media.AssetPresenter(signer);
+  const catalogVisibility = new CatalogAssetVisibility(db);
+  // Site images (logo, portrait) are public by nature; artwork images only once published.
+  const visibility: AssetVisibility = {
+    isPublic: async a => a.kind === 'site' || (await catalogVisibility.isPublicArtworkImage(a.id)),
+    isInUse: (tenantId, id) => catalogVisibility.isUsedByArtwork(tenantId, id),
+  };
+  const processAsset = new media.ProcessAsset(assets, storage, imageProcessor);
+  jobs.register(media.PROCESS_ASSET_JOB, (data: { assetId: string }) => processAsset.execute(data));
+  const readyCounter = new media.ReadyImageCounter(assets);
+
+  // Catalog, reading images through a narrow port onto media
+  const artworkImages: ArtworkImages = {
+    owned: async (tenantId, ids) => {
+      const found = new Set((await assets.findMany(tenantId, ids)).map(a => a.id));
+      return ids.filter(id => found.has(id));
+    },
+    countReady: (tenantId, ids) => readyCounter.count(tenantId, ids),
+    describe: async (tenantId, ids, signed) =>
+      new Map((await assets.findMany(tenantId, ids)).map(a => [a.id, assetPresenter.toDto(a, signed)])),
+  };
+  const artworkService = catalog.createArtworkService(
+    new KyselyArtworkRepository(db),
+    new KyselyCategoryRepository(db),
+    artworkImages,
+    new ArtworkPresenter(artworkImages),
+  );
+
   return {
+    config,
+    jobs,
+    storage,
     tokens,
     resolver,
     identity: {
@@ -49,6 +124,27 @@ export function buildContainer(config: Config, db: Db) {
       listDomains: new tenancy.ListDomains(domains),
       addDomain: new tenancy.AddDomain(domains, resolver, config.PLATFORM_DOMAIN),
       removeDomain: new tenancy.RemoveDomain(domains, resolver),
+    },
+    media: {
+      upload: new media.UploadAsset(assets, storage, imageProcessor, jobs, assetPresenter),
+      list: new media.ListAssets(assets, assetPresenter),
+      update: new media.UpdateAsset(assets, assetPresenter),
+      remove: new media.DeleteAsset(assets, storage, visibility),
+      serve: new media.ServeAsset(assets, storage, visibility, signer),
+    },
+    catalog: {
+      create: new catalog.CreateArtwork(artworkService),
+      update: new catalog.UpdateArtwork(artworkService),
+      remove: new catalog.DeleteArtwork(artworkService),
+      status: new catalog.ChangeArtworkStatus(artworkService),
+      bulk: new catalog.BulkUpdateArtworks(artworkService),
+      get: new catalog.GetArtwork(artworkService),
+      list: new catalog.ListArtworks(artworkService),
+      listCategories: new catalog.ListCategories(artworkService.categories),
+      saveCategory: new catalog.SaveCategory(artworkService.categories),
+      deleteCategory: new catalog.DeleteCategory(artworkService.categories),
+      recordSale: new catalog.RecordArtworkSale(artworkService),
+      public: new catalog.PublicCatalog(artworkService),
     },
   };
 }

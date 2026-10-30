@@ -3,6 +3,8 @@ import { fileURLToPath } from 'node:url';
 import { sql } from 'kysely';
 import { buildApp } from '../src/app.js';
 import { buildContainer } from '../src/container.js';
+import { MemoryObjectStorage } from '../src/modules/media/infrastructure/object-storage.js';
+import { InlineJobQueue } from '../src/shared/jobs/queue.js';
 import { loadConfig } from '../src/shared/config.js';
 import { createDb, type Db } from '../src/shared/db/database.js';
 import { migrate } from '../src/shared/db/migrate.js';
@@ -17,6 +19,7 @@ export const testConfig = loadConfig({
   JWT_SECRET: 'test-secret-test-secret-test-secret-123',
   ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),
   PLATFORM_DOMAIN: 'platform.test',
+  PUBLIC_API_URL: 'http://api.platform.test',
 });
 
 /** Fresh schema, migrated, plus an app wired exactly like production. */
@@ -24,10 +27,12 @@ export async function setupTestApp(overrides: (c: ReturnType<typeof buildContain
   const db = createDb(TEST_DB_URL);
   await sql`DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;`.execute(db);
   await migrate(db, path.resolve(here, '../migrations'));
-  const container = buildContainer(testConfig, db);
+  const storage = new MemoryObjectStorage();
+  const jobs = new InlineJobQueue();
+  const container = buildContainer(testConfig, db, { storage, jobs });
   overrides(container);
   const app = await buildApp(testConfig, container);
-  return { app, db, container, close: async () => (await app.close(), await db.destroy()) };
+  return { app, db, container, storage, jobs, close: async () => (await app.close(), await db.destroy()) };
 }
 
 export type TestApp = Awaited<ReturnType<typeof setupTestApp>>['app'];
@@ -60,3 +65,21 @@ export async function onboardTenant(app: TestApp, adminToken: string, slug: stri
   const { token } = await login(app, owner.email, owner.password);
   return { tenant: res.json(), owner, token, auth: { authorization: `Bearer ${token}` } };
 }
+
+/** A small real PNG, so uploads go through sharp like a photo would. */
+export async function samplePng(width = 64, height = 48) {
+  const sharp = (await import('sharp')).default;
+  return sharp({ create: { width, height, channels: 3, background: { r: 180, g: 90, b: 40 } } }).png().toBuffer();
+}
+
+export async function uploadImage(app: TestApp, auth: Record<string, string>, data?: Buffer, filename = 'painting.png', kind = 'artwork') {
+  const form = new FormData();
+  form.append('file', new Blob([data ?? (await samplePng())]), filename);
+  return app.inject({ method: 'POST', url: `/media?kind=${kind}`, headers: auth, payload: form });
+}
+
+/** Path + query of an absolute asset URL, for app.inject. */
+export const pathOf = (url: string) => {
+  const u = new URL(url);
+  return u.pathname + u.search;
+};

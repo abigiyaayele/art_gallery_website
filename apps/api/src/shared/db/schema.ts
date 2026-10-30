@@ -82,7 +82,80 @@ export interface SiteSettingsTable {
   updated_at: Timestamp;
 }
 
+export interface AssetVariant {
+  key: string;
+  width: number;
+  height: number;
+  bytes: number;
+}
+
+export interface AssetsTable {
+  id: Generated<string>;
+  tenant_id: string;
+  kind: 'artwork' | 'site';
+  status: Generated<'processing' | 'ready' | 'failed'>;
+  original_key: string;
+  original_name: Generated<string>;
+  mime_type: string;
+  size_bytes: number;
+  width: number | null;
+  height: number | null;
+  variants: Json<Record<string, AssetVariant>>;
+  alt_text: Generated<string>;
+  error: string | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+}
+
+export interface CategoriesTable {
+  id: Generated<string>;
+  tenant_id: string;
+  name: string;
+  slug: string;
+  sort_order: Generated<number>;
+  created_at: Timestamp;
+}
+
+export interface ArtworksTable {
+  id: Generated<string>;
+  tenant_id: string;
+  category_id: string | null;
+  title: string;
+  slug: string;
+  description: Generated<string>;
+  story: Generated<string>;
+  medium: Generated<string>;
+  dimensions: Generated<string>;
+  year: number | null;
+  collection: Generated<string>;
+  tags: Generated<string[]>;
+  seo_title: Generated<string>;
+  seo_description: Generated<string>;
+  price_cents: number | null;
+  currency: Generated<string>;
+  discount_type: 'percent' | 'fixed_price' | null;
+  discount_value: number | null;
+  status: Generated<'draft' | 'available' | 'sold'>;
+  featured: Generated<boolean>;
+  sort_order: Generated<number>;
+  published_at: Timestamp | null;
+  sold_at: Timestamp | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+}
+
+export interface ArtworkImagesTable {
+  tenant_id: string;
+  artwork_id: string;
+  asset_id: string;
+  position: Generated<number>;
+}
+
 export interface Database {
+  assets: AssetsTable;
+  categories: CategoriesTable;
+  artworks: ArtworksTable;
+  artwork_images: ArtworkImagesTable;
   tenants: TenantsTable;
   domains: DomainsTable;
   users: UsersTable;
@@ -97,3 +170,6 @@ export type NewTenantRow = Insertable<TenantsTable>;
 export type UserRow = Selectable<UsersTable>;
 export type DomainRow = Selectable<DomainsTable>;
 export type TenantUpdate = Updateable<TenantsTable>;
+export type AssetRow = Selectable<AssetsTable>;
+export type ArtworkRow = Selectable<ArtworksTable>;
+export type CategoryRow = Selectable<CategoriesTable>;

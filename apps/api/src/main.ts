@@ -1,14 +1,20 @@
 import { buildApp } from './app.js';
-import { buildContainer } from './container.js';
+import { buildContainer, defaultInfrastructure } from './container.js';
+import { S3ObjectStorage } from './modules/media/infrastructure/object-storage.js';
 import { loadConfig } from './shared/config.js';
 import { createDb } from './shared/db/database.js';
 
 const config = loadConfig();
 const db = createDb(config.DATABASE_URL);
-const app = await buildApp(config, buildContainer(config, db));
+const infra = defaultInfrastructure(config);
+if (infra.storage instanceof S3ObjectStorage) await infra.storage.ensureBucket();
+const container = buildContainer(config, db, infra);
+const app = await buildApp(config, container);
+await container.jobs.start();
 
 const shutdown = async () => {
   await app.close();
+  await container.jobs.stop();
   await db.destroy();
   process.exit(0);
 };

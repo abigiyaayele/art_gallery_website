@@ -2,6 +2,7 @@ import {
   BarChart3,
   Brush,
   Building2,
+  FolderTree,
   CircleDollarSign,
   Globe,
   Image,
@@ -23,6 +24,7 @@ import { useAuth, useWorkspace } from '../lib/auth';
 const nav = [
   { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: '/artworks', label: 'Artworks', icon: Brush },
+  { to: '/categories', label: 'Categories', icon: FolderTree },
   { to: '/media', label: 'Images', icon: Image },
   { to: '/pricing', label: 'Pricing & discounts', icon: Tag },
   { to: '/sold', label: 'Sold work', icon: CircleDollarSign },

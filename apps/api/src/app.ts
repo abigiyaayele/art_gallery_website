@@ -1,10 +1,15 @@
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import etag from '@fastify/etag';
+import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import Fastify from 'fastify';
 import type { Container } from './container.js';
+import { publicCatalogRoutes } from './modules/catalog/presentation/public-routes.js';
+import { catalogRoutes } from './modules/catalog/presentation/routes.js';
 import { identityRoutes } from './modules/identity/presentation/routes.js';
+import { mediaRoutes } from './modules/media/presentation/routes.js';
 import { tenancyRoutes } from './modules/tenancy/presentation/routes.js';
 import type { Config } from './shared/config.js';
 import { registerAuth } from './shared/http/auth.js';
@@ -25,6 +30,8 @@ export async function buildApp(config: Config, container: Container) {
     credentials: true,
   });
   await app.register(cookie);
+  await app.register(etag);
+  await app.register(multipart);
   await app.register(rateLimit, { global: true, max: 300, timeWindow: '1 minute' });
 
   registerAuth(app, async token => {
@@ -35,6 +42,9 @@ export async function buildApp(config: Config, container: Container) {
   app.get('/health', async () => ({ ok: true }));
   await app.register(identityRoutes(container.identity, { secureCookies: config.NODE_ENV === 'production' }));
   await app.register(tenancyRoutes(container.tenancy));
+  await app.register(mediaRoutes(container.media));
+  await app.register(catalogRoutes(container.catalog));
+  await app.register(publicCatalogRoutes(container.catalog.public, container.resolver));
 
   return app;
 }
