@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ImagePicker } from '../components/ImagePicker';
 import { Badge, ErrorText, Field, PageHeader, Spinner } from '../components/ui';
 import { api } from '../lib/api';
+import { AiCopyPanel } from '../components/AiCopyPanel';
 import { statusLabel, statusTone, useArtwork, useArtworkAction, useCategories } from '../lib/catalog';
 import { fromCents, money, toCents } from '../lib/format';
 
@@ -298,6 +299,7 @@ export function ArtworkEditorPage() {
               Feature on the home page
             </label>
           </section>
+          {current && <AiCopyPanel artwork={current} />}
           {current && (
             <button
               type="button"

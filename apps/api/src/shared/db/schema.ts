@@ -225,6 +225,48 @@ export interface PageViewsTable {
   views: Generated<number>;
 }
 
+export interface AiUsageTable {
+  tenant_id: string;
+  month: string;
+  input_tokens: Generated<number>;
+  output_tokens: Generated<number>;
+  requests: Generated<number>;
+}
+
+export interface AiSuggestionsTable {
+  id: Generated<string>;
+  tenant_id: string;
+  artwork_id: string | null;
+  kind: 'artwork_copy' | 'ideas';
+  status: Generated<'pending' | 'applied' | 'dismissed'>;
+  input: Json<Record<string, unknown>>;
+  output: Json<Record<string, unknown>>;
+  created_by: string | null;
+  created_at: Timestamp;
+}
+
+export interface GoalsTable {
+  id: Generated<string>;
+  tenant_id: string;
+  title: string;
+  notes: Generated<string>;
+  target: number | null;
+  current: Generated<number>;
+  unit: Generated<string>;
+  due_date: ColumnType<string | null, string | null | undefined, string | null>;
+  status: Generated<'active' | 'done' | 'dropped'>;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+}
+
+export interface JournalEntriesTable {
+  id: Generated<string>;
+  tenant_id: string;
+  kind: Generated<'entry' | 'summary'>;
+  body: string;
+  created_at: Timestamp;
+}
+
 export interface Database {
   site_pages: SitePagesTable;
   inquiries: InquiriesTable;
@@ -243,6 +285,10 @@ export interface Database {
   refresh_tokens: RefreshTokensTable;
   artist_profiles: ArtistProfilesTable;
   site_settings: SiteSettingsTable;
+  ai_usage: AiUsageTable;
+  ai_suggestions: AiSuggestionsTable;
+  goals: GoalsTable;
+  journal_entries: JournalEntriesTable;
 }
 
 export type TenantRow = Selectable<TenantsTable>;

@@ -10,7 +10,7 @@ import { CategoriesPage } from './pages/CategoriesPage';
 import { MediaPage } from './pages/MediaPage';
 import { PricingPage } from './pages/PricingPage';
 import { SoldPage } from './pages/SoldPage';
-import { ComingSoonPage } from './pages/ComingSoonPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { LoginPage } from './pages/LoginPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { InquiriesPage } from './pages/InquiriesPage';
@@ -18,6 +18,8 @@ import { OverviewPage } from './pages/OverviewPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ShopPage } from './pages/ShopPage';
 import { WebsitePage } from './pages/WebsitePage';
+import { AssistantPage } from './pages/AssistantPage';
+import { GoalsPage } from './pages/GoalsPage';
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
@@ -53,9 +55,11 @@ export function App() {
         <Route path="inquiries" element={<InquiriesPage />} />
         <Route path="website" element={<WebsitePage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="assistant" element={<AssistantPage />} />
+        <Route path="goals" element={<GoalsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="admin/tenants" element={<TenantsPage />} />
-        <Route path="*" element={<ComingSoonPage title="Coming soon" />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

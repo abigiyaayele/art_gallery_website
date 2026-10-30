@@ -7,6 +7,20 @@ import { MemoryObjectStorage } from '../src/modules/media/infrastructure/object-
 import { InlineJobQueue } from '../src/shared/jobs/queue.js';
 import type { InitializeRequest, PaymentProvider, VerifiedPayment } from '../src/modules/commerce/application/ports.js';
 import crypto from 'node:crypto';
+import type { AiProvider, AiRequest, AiResult } from '../src/modules/ai/application/ports.js';
+
+/** Stands in for Claude: records each request and replies with whatever the test queued. */
+export class FakeAiProvider implements AiProvider {
+  configured = true;
+  readonly requests: AiRequest[] = [];
+  replies: string[] = [];
+  usage = { inputTokens: 1200, outputTokens: 300 };
+
+  async generate(req: AiRequest): Promise<AiResult> {
+    this.requests.push(req);
+    return { text: this.replies.shift() ?? 'Here is my thought.', usage: this.usage };
+  }
+}
 
 /** Stands in for Chapa: records checkouts and answers verification however the test says. */
 export class FakePaymentProvider implements PaymentProvider {
@@ -60,10 +74,11 @@ export async function setupTestApp(overrides: (c: ReturnType<typeof buildContain
   const storage = new MemoryObjectStorage();
   const jobs = new InlineJobQueue();
   const payments = new FakePaymentProvider();
-  const container = buildContainer(testConfig, db, { storage, jobs, payments });
+  const ai = new FakeAiProvider();
+  const container = buildContainer(testConfig, db, { storage, jobs, payments, ai });
   overrides(container);
   const app = await buildApp(testConfig, container);
-  return { app, db, container, storage, jobs, payments, close: async () => (await app.close(), await db.destroy()) };
+  return { app, db, container, storage, jobs, payments, ai, close: async () => (await app.close(), await db.destroy()) };
 }
 
 export type TestApp = Awaited<ReturnType<typeof setupTestApp>>['app'];

@@ -6,3 +6,4 @@ export * from './catalog.js';
 export * from './site.js';
 export * from './commerce.js';
 export * from './analytics.js';
+export * from './ai.js';

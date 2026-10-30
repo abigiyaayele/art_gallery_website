@@ -1,5 +1,15 @@
 import type { Config } from './shared/config.js';
 import { SecretBox } from './shared/crypto/secret-box.js';
+import * as ai from './modules/ai/application/use-cases.js';
+import type { AiProvider } from './modules/ai/application/ports.js';
+import { ClaudeAiProvider, DisabledAiProvider } from './modules/ai/infrastructure/claude-provider.js';
+import {
+  KyselyAiUsageStore,
+  KyselyArtistContext,
+  KyselyGoalRepository,
+  KyselyJournalRepository,
+  KyselySuggestionRepository,
+} from './modules/ai/infrastructure/repositories.js';
 import * as analytics from './modules/analytics/application/use-cases.js';
 import { KyselyAnalyticsRepository } from './modules/analytics/infrastructure/analytics-repository.js';
 import type { PaymentProvider } from './modules/commerce/application/ports.js';
@@ -43,6 +53,7 @@ export interface Infrastructure {
   storage: ObjectStorage;
   jobs: JobQueue;
   payments: PaymentProvider;
+  ai: AiProvider;
 }
 
 export function defaultInfrastructure(config: Config): Infrastructure {
@@ -59,6 +70,7 @@ export function defaultInfrastructure(config: Config): Infrastructure {
           }),
     jobs: config.JOB_DRIVER === 'inline' ? new InlineJobQueue() : new PgBossJobQueue(config.DATABASE_URL),
     payments: new ChapaProvider(config.CHAPA_API_URL),
+    ai: config.ANTHROPIC_API_KEY ? new ClaudeAiProvider(config.ANTHROPIC_API_KEY, config.AI_MODEL) : new DisabledAiProvider(),
   };
 }
 
@@ -155,6 +167,29 @@ export function buildContainer(config: Config, db: Db, infra: Infrastructure = d
   const inquiryRepo = new KyselyInquiryRepository(db);
   const analyticsRepo = new KyselyAnalyticsRepository(db);
 
+  // AI assistant: reads the artist's data, drafts suggestions, and writes to
+  // the catalog only through the normal update use case once the artist approves.
+  const getArtwork = new catalog.GetArtwork(artworkService);
+  const updateArtwork = new catalog.UpdateArtwork(artworkService);
+  const meteredAi = new ai.MeteredAi(infra.ai, new KyselyAiUsageStore(db));
+  const aiDeps = {
+    ai: meteredAi,
+    context: new KyselyArtistContext(db),
+    suggestions: new KyselySuggestionRepository(db),
+    goals: new KyselyGoalRepository(db),
+    journal: new KyselyJournalRepository(db),
+    artworks: {
+      get: (actor: Parameters<typeof getArtwork.execute>[0], id: string) => getArtwork.execute(actor, id),
+      coverImage: async (tenantId: string, assetId: string) => {
+        const asset = await assets.find(tenantId, assetId);
+        const key = asset?.variants.medium?.key ?? asset?.variants.thumb?.key;
+        const data = key && (await storage.getBuffer(key));
+        return data ? { mediaType: 'image/webp' as const, data } : undefined;
+      },
+      applyCopy: (actor: Parameters<typeof updateArtwork.execute>[0], id: string, patch: Parameters<typeof updateArtwork.execute>[2]) => updateArtwork.execute(actor, id, patch),
+    },
+  };
+
   return {
     config,
     jobs,
@@ -190,11 +225,11 @@ export function buildContainer(config: Config, db: Db, infra: Infrastructure = d
     },
     catalog: {
       create: new catalog.CreateArtwork(artworkService),
-      update: new catalog.UpdateArtwork(artworkService),
+      update: updateArtwork,
       remove: new catalog.DeleteArtwork(artworkService),
       status: new catalog.ChangeArtworkStatus(artworkService),
       bulk: new catalog.BulkUpdateArtworks(artworkService),
-      get: new catalog.GetArtwork(artworkService),
+      get: getArtwork,
       list: new catalog.ListArtworks(artworkService),
       listCategories: new catalog.ListCategories(artworkService.categories),
       saveCategory: new catalog.SaveCategory(artworkService.categories),
@@ -227,6 +262,22 @@ export function buildContainer(config: Config, db: Db, infra: Infrastructure = d
       submit: new inquiries.SubmitInquiry(inquiryRepo, new KyselyArtworkLookup(db)),
       list: new inquiries.ListInquiries(inquiryRepo),
       update: new inquiries.UpdateInquiry(inquiryRepo),
+    },
+    ai: {
+      draftCopy: new ai.DraftArtworkCopy(aiDeps),
+      applyCopy: new ai.ApplyArtworkCopy(aiDeps),
+      dismiss: new ai.DismissSuggestion(aiDeps),
+      listSuggestions: new ai.ListSuggestions(aiDeps),
+      ideas: new ai.GenerateIdeas(aiDeps),
+      chat: new ai.Chat(aiDeps),
+      usage: new ai.GetAiUsage(meteredAi),
+      listGoals: new ai.ListGoals(aiDeps),
+      saveGoal: new ai.SaveGoal(aiDeps),
+      deleteGoal: new ai.DeleteGoal(aiDeps),
+      listJournal: new ai.ListJournal(aiDeps),
+      addJournal: new ai.AddJournalEntry(aiDeps),
+      deleteJournal: new ai.DeleteJournalEntry(aiDeps),
+      weeklySummary: new ai.WriteWeeklySummary(aiDeps),
     },
     analytics: {
       recordView: new analytics.RecordPageView(analyticsRepo),

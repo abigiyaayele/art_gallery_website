@@ -21,8 +21,8 @@ function Stat({ label, value, to, hint }: { label: string; value: string | numbe
 
 /** Thirty days of visits as simple bars; days without visits show as gaps. */
 function Visits({ views }: { views: OverviewData['views'] }) {
-  const days = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(Date.now() - (29 - i) * 86_400_000).toISOString().slice(0, 10);
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(Date.now() - (13 - i) * 86_400_000).toISOString().slice(0, 10);
     return { day: d, views: views.find(v => v.day === d)?.views ?? 0 };
   });
   const max = Math.max(1, ...days.map(d => d.views));
@@ -31,9 +31,9 @@ function Visits({ views }: { views: OverviewData['views'] }) {
     <div className="card">
       <div className="mb-4 flex items-baseline justify-between">
         <h2 className="font-semibold">Website visits</h2>
-        <span className="text-sm text-stone-500">{total} page views in 30 days</span>
+        <span className="text-sm text-stone-500">{total} page views in 14 days</span>
       </div>
-      <div className="flex h-32 items-end gap-1" role="img" aria-label={`${total} page views in the last 30 days`}>
+      <div className="flex h-32 items-end gap-1" role="img" aria-label={`${total} page views in the last 14 days`}>
         {days.map(d => (
           <div key={d.day} title={`${date(d.day)}: ${d.views}`} className="flex-1 rounded-t bg-stone-800" style={{ height: `${Math.max(2, (d.views / max) * 100)}%`, opacity: d.views ? 1 : 0.15 }} />
         ))}
