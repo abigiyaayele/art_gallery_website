@@ -32,12 +32,12 @@ export function WebsitePage() {
         description="Choose how your site looks and what each page says. Changes go live within a minute."
         actions={siteUrl && <a className="btn-secondary" href={siteUrl} target="_blank" rel="noreferrer"><ExternalLink size={14} /> View site</a>}
       />
-      <div className="mb-6 flex flex-wrap gap-1 border-b border-stone-200">
+      <div className="-mx-4 mb-6 flex gap-1 overflow-x-auto border-b border-stone-200 px-4 md:-mx-8 md:px-8 lg:mx-0 lg:px-0">
         {[{ key: 'look' as const, label: 'Theme & branding' }, ...(pages.data ?? []).map(p => ({ key: p.slug, label: p.title || p.slug }))].map(t => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`-mb-px border-b-2 px-3 py-2 text-sm capitalize ${tab === t.key ? 'border-stone-900 font-medium' : 'border-transparent text-stone-500 hover:text-stone-800'}`}
+            className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm capitalize ${tab === t.key ? 'border-stone-900 font-medium' : 'border-transparent text-stone-500 hover:text-stone-800'}`}
           >
             {t.label}
           </button>

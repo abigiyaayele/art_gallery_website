@@ -123,7 +123,7 @@ function ArtworkTile({ artwork: a, selected, onToggle }: { artwork: ArtworkDto; 
         </div>
         <div className="space-y-1 p-3">
           <p className="truncate font-medium">{a.title}</p>
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-1 text-sm">
             <span>
               {a.price?.onSale && <span className="mr-1 text-stone-400 line-through">{money(a.price.regularCents, a.currency)}</span>}
               {money(a.price?.effectiveCents, a.currency)}

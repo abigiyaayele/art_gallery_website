@@ -32,7 +32,7 @@ export function AssistantPage() {
       {u && !u.configured ? (
         <EmptyState title="The AI assistant is not set up yet">The platform administrator needs to add an Anthropic API key.</EmptyState>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
+        <div className="grid gap-6 xl:grid-cols-[3fr_2fr]">
           <ChatCard />
           <IdeasCard />
         </div>
@@ -74,7 +74,7 @@ function ChatCard() {
   };
 
   return (
-    <div className="card flex h-[640px] flex-col p-0">
+    <div className="card flex h-[calc(100dvh-9rem)] min-h-[420px] flex-col p-0 xl:h-[640px]">
       <div className="flex-1 space-y-3 overflow-y-auto p-5">
         {messages.length === 0 && (
           <div className="space-y-3">

@@ -196,7 +196,7 @@ export function ArtworkEditorPage() {
         {save.isSuccess && !save.isPending && <p className="text-sm text-emerald-700">Saved.</p>}
       </div>
 
-      <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="mt-4 grid gap-6 xl:grid-cols-[1fr_340px]">
         <div className="space-y-6">
           <section className="card space-y-4">
             <h2 className="font-semibold">Images</h2>
