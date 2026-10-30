@@ -8,3 +8,5 @@ coverage/
 !.env.example
 
 server/data/
+apps/*/server/data/
+.minio/
