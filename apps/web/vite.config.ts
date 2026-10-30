@@ -1,24 +1,28 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig(({mode}) => {
+export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
+  const apiUrl = env.API_URL || 'http://localhost:4000';
   return {
     plugins: [react(), tailwindcss()],
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, '.'),
-      },
-    },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-      hmr: process.env.DISABLE_HMR !== 'true',
-      // Forward API calls to the payment server (npm run dev:server).
+      port: 3000,
       proxy: {
-        '/api': `http://localhost:${env.PORT || 3001}`,
+        // The API picks the artist from the visitor's host, e.g. seifu.localhost:3000.
+        // DEV_TENANT_HOST pins one artist when browsing on plain localhost.
+        '/api': {
+          target: apiUrl,
+          changeOrigin: true,
+          rewrite: path => path.replace(/^\/api/, ''),
+          configure: proxy => {
+            proxy.on('proxyReq', (proxyReq, req) => {
+              const host = env.DEV_TENANT_HOST || req.headers.host || '';
+              proxyReq.setHeader('x-tenant-host', host);
+            });
+          },
+        },
       },
     },
   };

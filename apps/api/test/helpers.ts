@@ -5,6 +5,35 @@ import { buildApp } from '../src/app.js';
 import { buildContainer } from '../src/container.js';
 import { MemoryObjectStorage } from '../src/modules/media/infrastructure/object-storage.js';
 import { InlineJobQueue } from '../src/shared/jobs/queue.js';
+import type { InitializeRequest, PaymentProvider, VerifiedPayment } from '../src/modules/commerce/application/ports.js';
+import crypto from 'node:crypto';
+
+/** Stands in for Chapa: records checkouts and answers verification however the test says. */
+export class FakePaymentProvider implements PaymentProvider {
+  readonly name = 'fake';
+  readonly initialized: InitializeRequest[] = [];
+  results = new Map<string, Partial<VerifiedPayment>>();
+  failInitialize = false;
+
+  async initialize(_creds: unknown, req: InitializeRequest) {
+    if (this.failInitialize) throw new Error('provider down');
+    this.initialized.push(req);
+    return { checkoutUrl: `https://pay.test/checkout/${req.txRef}` };
+  }
+
+  async verify(_creds: unknown, txRef: string): Promise<VerifiedPayment> {
+    const req = this.initialized.find(r => r.txRef === txRef);
+    return { status: 'pending', amountCents: req?.amountCents ?? 0, currency: req?.currency ?? 'USD', reference: `ref-${txRef}`, raw: {}, ...this.results.get(txRef) };
+  }
+
+  isValidWebhook(creds: { webhookSecret: string }, rawBody: Buffer, headers: Record<string, string | string[] | undefined>) {
+    return headers['x-chapa-signature'] === crypto.createHmac('sha256', creds.webhookSecret).update(rawBody).digest('hex');
+  }
+
+  webhookTxRef(body: unknown) {
+    return (body as { tx_ref?: string })?.tx_ref;
+  }
+}
 import { loadConfig } from '../src/shared/config.js';
 import { createDb, type Db } from '../src/shared/db/database.js';
 import { migrate } from '../src/shared/db/migrate.js';
@@ -20,6 +49,7 @@ export const testConfig = loadConfig({
   ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),
   PLATFORM_DOMAIN: 'platform.test',
   PUBLIC_API_URL: 'http://api.platform.test',
+  SITE_URL_TEMPLATE: 'https://{host}',
 });
 
 /** Fresh schema, migrated, plus an app wired exactly like production. */
@@ -29,10 +59,11 @@ export async function setupTestApp(overrides: (c: ReturnType<typeof buildContain
   await migrate(db, path.resolve(here, '../migrations'));
   const storage = new MemoryObjectStorage();
   const jobs = new InlineJobQueue();
-  const container = buildContainer(testConfig, db, { storage, jobs });
+  const payments = new FakePaymentProvider();
+  const container = buildContainer(testConfig, db, { storage, jobs, payments });
   overrides(container);
   const app = await buildApp(testConfig, container);
-  return { app, db, container, storage, jobs, close: async () => (await app.close(), await db.destroy()) };
+  return { app, db, container, storage, jobs, payments, close: async () => (await app.close(), await db.destroy()) };
 }
 
 export type TestApp = Awaited<ReturnType<typeof setupTestApp>>['app'];
@@ -83,3 +114,12 @@ export const pathOf = (url: string) => {
   const u = new URL(url);
   return u.pathname + u.search;
 };
+
+/** Uploads an image, creates an artwork and publishes it. */
+export async function publishArtwork(app: TestApp, auth: Record<string, string>, title: string, priceCents = 100000, extra: Record<string, unknown> = {}) {
+  const imageId = (await uploadImage(app, auth)).json().id;
+  const created = await app.inject({ method: 'POST', url: '/artworks', headers: auth, payload: { title, priceCents, imageIds: [imageId], ...extra } });
+  if (created.statusCode !== 201) throw new Error(created.body);
+  const published = await app.inject({ method: 'POST', url: `/artworks/${created.json().id}/publish`, headers: auth });
+  return published.json();
+}

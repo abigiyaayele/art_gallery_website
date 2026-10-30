@@ -1,36 +1,41 @@
-import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Layout from './components/layout/Layout';
-import ExhibitionPage from './pages/ExhibitionPage';
-import ArchivePage from './pages/ArchivePage';
-import ArtworkPage from './pages/ArtworkPage';
-import CheckoutPage from './pages/CheckoutPage';
-import AboutPage from './pages/AboutPage';
-import OffersPage from './pages/OffersPage';
-import CommissionPage from './pages/CommissionPage';
-import ContactPage from './pages/ContactPage';
-import DepositPage from './pages/DepositPage';
-import PaymentCompletePage from './pages/PaymentCompletePage';
-import NotFoundPage from './pages/NotFoundPage';
+import React, { Suspense, useEffect } from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { SiteProvider, useSite } from './platform/SiteProvider';
+import { useBranding, usePageViews } from './platform/useSiteEffects';
+import { themes } from './themes';
+
+function Status({ error }: { error: Error | null }) {
+  const notFound = (error as { status?: number } | null)?.status === 404;
+  return (
+    <div className="flex h-dvh items-center justify-center bg-bg p-6 text-center text-sm text-text-muted">
+      {!error ? 'Loading…' : notFound ? 'There is no artist site at this address.' : 'This site could not be loaded. Please try again in a moment.'}
+    </div>
+  );
+}
+
+function ThemedSite() {
+  const { site } = useSite();
+  useBranding(site);
+  usePageViews();
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = site.themeKey;
+  }, [site.themeKey]);
+
+  const Theme = themes[site.themeKey] ?? themes.atelier;
+  return (
+    <Suspense fallback={<Status error={null} />}>
+      <Theme />
+    </Suspense>
+  );
+}
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route index element={<ExhibitionPage />} />
-          <Route path="archive" element={<ArchivePage />} />
-          <Route path="art/:id" element={<ArtworkPage />} />
-          <Route path="checkout/:id" element={<CheckoutPage />} />
-          <Route path="offers" element={<OffersPage />} />
-          <Route path="commission" element={<CommissionPage />} />
-          <Route path="commission/deposit" element={<DepositPage />} />
-          <Route path="payment/complete" element={<PaymentCompletePage />} />
-          <Route path="about" element={<AboutPage />} />
-          <Route path="contact" element={<ContactPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+      <SiteProvider fallback={error => <Status error={error} />}>
+        <ThemedSite />
+      </SiteProvider>
     </BrowserRouter>
   );
 }

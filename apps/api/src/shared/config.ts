@@ -18,6 +18,9 @@ const schema = z.object({
   S3_BUCKET: z.string().default('artist-platform'),
   /** 'inline' runs background jobs in the API process right away (tests, simple setups). */
   JOB_DRIVER: z.enum(['pgboss', 'inline']).default('pgboss'),
+  /** How artist websites are reached; {host} is the tenant's primary domain. */
+  SITE_URL_TEMPLATE: z.string().default('https://{host}'),
+  CHAPA_API_URL: z.string().default('https://api.chapa.co/v1'),
   ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().default(15 * 60),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().default(30),
 });

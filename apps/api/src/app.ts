@@ -6,6 +6,10 @@ import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import Fastify from 'fastify';
 import type { Container } from './container.js';
+import { analyticsRoutes } from './modules/analytics/presentation/routes.js';
+import { commerceRoutes } from './modules/commerce/presentation/routes.js';
+import { inquiryRoutes } from './modules/inquiries/presentation/routes.js';
+import { siteRoutes } from './modules/site/presentation/routes.js';
 import { publicCatalogRoutes } from './modules/catalog/presentation/public-routes.js';
 import { catalogRoutes } from './modules/catalog/presentation/routes.js';
 import { identityRoutes } from './modules/identity/presentation/routes.js';
@@ -45,6 +49,10 @@ export async function buildApp(config: Config, container: Container) {
   await app.register(mediaRoutes(container.media));
   await app.register(catalogRoutes(container.catalog));
   await app.register(publicCatalogRoutes(container.catalog.public, container.resolver));
+  await app.register(siteRoutes(container.site, container.resolver));
+  await app.register(commerceRoutes(container.commerce, container.resolver));
+  await app.register(inquiryRoutes(container.inquiries, container.resolver));
+  await app.register(analyticsRoutes(container.analytics, container.resolver));
 
   return app;
 }

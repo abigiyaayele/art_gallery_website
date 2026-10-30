@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:unit": "vitest run src",
     "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
-    "db:seed": "tsx --env-file-if-exists=.env scripts/seed.ts"
+    "db:seed": "tsx --env-file-if-exists=.env scripts/seed.ts",
+    "import:seifu": "tsx --env-file-if-exists=.env scripts/import-seifu.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1160.0",

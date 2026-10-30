@@ -1,6 +1,19 @@
 import type { Config } from './shared/config.js';
+import { SecretBox } from './shared/crypto/secret-box.js';
+import * as analytics from './modules/analytics/application/use-cases.js';
+import { KyselyAnalyticsRepository } from './modules/analytics/infrastructure/analytics-repository.js';
+import type { PaymentProvider } from './modules/commerce/application/ports.js';
+import * as commerce from './modules/commerce/application/use-cases.js';
+import { ChapaProvider } from './modules/commerce/infrastructure/chapa-provider.js';
+import { KyselyOrderRepository, KyselySecretStore } from './modules/commerce/infrastructure/order-repository.js';
+import * as inquiries from './modules/inquiries/application/use-cases.js';
+import { KyselyArtworkLookup, KyselyInquiryRepository } from './modules/inquiries/infrastructure/repositories.js';
+import type { SiteImages } from './modules/site/application/ports.js';
+import * as site from './modules/site/application/use-cases.js';
+import { KyselySiteRepository } from './modules/site/infrastructure/site-repository.js';
 import type { Db } from './shared/db/database.js';
 import { InlineJobQueue, PgBossJobQueue, type JobQueue } from './shared/jobs/queue.js';
+import type { ImageMap } from '@platform/contracts';
 import type { ArtworkImages } from './modules/catalog/application/ports.js';
 import { ArtworkPresenter } from './modules/catalog/application/presenter.js';
 import * as catalog from './modules/catalog/application/use-cases.js';
@@ -29,6 +42,7 @@ import { KyselyDomainRepository, KyselyTenantRepository } from './modules/tenanc
 export interface Infrastructure {
   storage: ObjectStorage;
   jobs: JobQueue;
+  payments: PaymentProvider;
 }
 
 export function defaultInfrastructure(config: Config): Infrastructure {
@@ -44,6 +58,7 @@ export function defaultInfrastructure(config: Config): Infrastructure {
             bucket: config.S3_BUCKET,
           }),
     jobs: config.JOB_DRIVER === 'inline' ? new InlineJobQueue() : new PgBossJobQueue(config.DATABASE_URL),
+    payments: new ChapaProvider(config.CHAPA_API_URL),
   };
 }
 
@@ -52,7 +67,7 @@ export function defaultInfrastructure(config: Config): Infrastructure {
  * and wires use cases. Tests pass in-memory infrastructure.
  */
 export function buildContainer(config: Config, db: Db, infra: Infrastructure = defaultInfrastructure(config)) {
-  const { storage, jobs } = infra;
+  const { storage, jobs, payments } = infra;
 
   // Identity
   const users = new KyselyUserRepository(db);
@@ -99,6 +114,47 @@ export function buildContainer(config: Config, db: Db, infra: Infrastructure = d
     new ArtworkPresenter(artworkImages),
   );
 
+  // Website content
+  const siteImages: SiteImages = {
+    owned: artworkImages.owned,
+    describe: async (tenantId, ids, signed) => {
+      const map: ImageMap = {};
+      for (const a of await assets.findMany(tenantId, ids)) {
+        const dto = assetPresenter.toDto(a, signed);
+        if (dto.urls.large) map[a.id] = { url: dto.urls.large, thumb: dto.urls.thumb ?? dto.urls.large, alt: a.altText, width: a.width, height: a.height };
+      }
+      return map;
+    },
+  };
+  const paymentCredentials = new commerce.PaymentCredentials(new KyselySecretStore(db), new SecretBox(config.ENCRYPTION_KEY));
+  const siteRepo = new KyselySiteRepository(db);
+  const siteService = site.createSiteService(siteRepo, siteImages);
+
+  // Commerce: reads prices from the catalog and records sales through it.
+  const recordSale = new catalog.RecordArtworkSale(artworkService);
+  const orders = new KyselyOrderRepository(db);
+  const checkout = commerce.createCheckoutService(
+    orders,
+    payments,
+    paymentCredentials,
+    {
+      findForSale: async (tenantId, slug) => {
+        const a = await artworkService.artworks.findPublicBySlug(tenantId, slug);
+        if (!a) return undefined;
+        return { id: a.id, title: a.snapshot.title, status: a.status, effectiveCents: a.price?.effectiveCents ?? null, currency: a.snapshot.currency };
+      },
+      recordSale: (tenantId, id) => recordSale.execute(tenantId, id),
+    },
+    { info: id => siteRepo.tenantInfo(id) },
+    {
+      siteUrl: host => config.SITE_URL_TEMPLATE.replace('{host}', host),
+      webhookUrl: tenantId => `${config.PUBLIC_API_URL}/payments/webhook/chapa/${tenantId}`,
+    },
+  );
+  const confirmPayment = new commerce.ConfirmPayment(checkout);
+  const inquiryRepo = new KyselyInquiryRepository(db);
+  const analyticsRepo = new KyselyAnalyticsRepository(db);
+
   return {
     config,
     jobs,
@@ -143,8 +199,38 @@ export function buildContainer(config: Config, db: Db, infra: Infrastructure = d
       listCategories: new catalog.ListCategories(artworkService.categories),
       saveCategory: new catalog.SaveCategory(artworkService.categories),
       deleteCategory: new catalog.DeleteCategory(artworkService.categories),
-      recordSale: new catalog.RecordArtworkSale(artworkService),
+      recordSale,
       public: new catalog.PublicCatalog(artworkService),
+    },
+    site: {
+      getProfile: new site.GetProfile(siteService),
+      updateProfile: new site.UpdateProfile(siteService),
+      getSettings: new site.GetSiteSettings(siteService),
+      updateSettings: new site.UpdateSiteSettings(siteService),
+      listPages: new site.ListPages(siteService),
+      savePage: new site.SavePage(siteService),
+      publicSite: new site.GetPublicSite(siteService, paymentCredentials),
+    },
+    commerce: {
+      checkout: new commerce.StartArtworkCheckout(checkout),
+      deposit: new commerce.StartDepositCheckout(checkout),
+      confirm: confirmPayment,
+      webhook: new commerce.HandlePaymentWebhook(checkout, confirmPayment),
+      publicStatus: new commerce.GetPublicOrderStatus(confirmPayment),
+      listOrders: new commerce.ListOrders(orders),
+      updateOrder: new commerce.UpdateOrder(orders),
+      getPaymentSettings: new commerce.GetPaymentSettings(paymentCredentials, checkout.urls),
+      savePaymentSettings: new commerce.SavePaymentSettings(paymentCredentials),
+      removePaymentSettings: new commerce.RemovePaymentSettings(paymentCredentials),
+    },
+    inquiries: {
+      submit: new inquiries.SubmitInquiry(inquiryRepo, new KyselyArtworkLookup(db)),
+      list: new inquiries.ListInquiries(inquiryRepo),
+      update: new inquiries.UpdateInquiry(inquiryRepo),
+    },
+    analytics: {
+      recordView: new analytics.RecordPageView(analyticsRepo),
+      overview: new analytics.GetOverview(analyticsRepo),
     },
   };
 }

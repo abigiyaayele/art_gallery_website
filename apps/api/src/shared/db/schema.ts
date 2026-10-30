@@ -151,7 +151,87 @@ export interface ArtworkImagesTable {
   position: Generated<number>;
 }
 
+export interface SitePagesTable {
+  tenant_id: string;
+  slug: string;
+  title: Generated<string>;
+  enabled: Generated<boolean>;
+  blocks: Json<unknown[]>;
+  updated_at: Timestamp;
+}
+
+export interface InquiriesTable {
+  id: Generated<string>;
+  tenant_id: string;
+  kind: 'contact' | 'commission' | 'purchase';
+  status: Generated<'new' | 'replied' | 'archived'>;
+  name: string;
+  email: string;
+  phone: Generated<string>;
+  subject: Generated<string>;
+  message: string;
+  details: Json<Record<string, string>>;
+  artwork_id: string | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+}
+
+export interface TenantSecretsTable {
+  tenant_id: string;
+  name: string;
+  ciphertext: string;
+  updated_at: Timestamp;
+}
+
+export type OrderStatus = 'pending' | 'paid' | 'failed' | 'expired' | 'shipped' | 'refunded';
+
+export interface OrdersTable {
+  id: Generated<string>;
+  tenant_id: string;
+  kind: 'artwork' | 'deposit';
+  artwork_id: string | null;
+  artwork_title: Generated<string>;
+  amount_cents: number;
+  currency: string;
+  status: Generated<OrderStatus>;
+  buyer_name: string;
+  buyer_email: string;
+  buyer_phone: Generated<string>;
+  shipping: Json<Record<string, string>>;
+  note: Generated<string>;
+  tx_ref: string;
+  hold_expires_at: Timestamp | null;
+  paid_at: Timestamp | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+}
+
+export interface PaymentsTable {
+  id: Generated<string>;
+  tenant_id: string;
+  order_id: string;
+  provider: string;
+  provider_reference: Generated<string>;
+  status: string;
+  raw: Json<unknown>;
+  verified_at: Timestamp | null;
+  created_at: Timestamp;
+}
+
+export interface PageViewsTable {
+  tenant_id: string;
+  day: ColumnType<string, string, string>;
+  path: string;
+  views: Generated<number>;
+}
+
 export interface Database {
+  site_pages: SitePagesTable;
+  inquiries: InquiriesTable;
+  tenant_secrets: TenantSecretsTable;
+  orders: OrdersTable;
+  payments: PaymentsTable;
+  page_views: PageViewsTable;
   assets: AssetsTable;
   categories: CategoriesTable;
   artworks: ArtworksTable;
@@ -173,3 +253,5 @@ export type TenantUpdate = Updateable<TenantsTable>;
 export type AssetRow = Selectable<AssetsTable>;
 export type ArtworkRow = Selectable<ArtworksTable>;
 export type CategoryRow = Selectable<CategoriesTable>;
+export type OrderRow = Selectable<OrdersTable>;
+export type InquiryRow = Selectable<InquiriesTable>;
