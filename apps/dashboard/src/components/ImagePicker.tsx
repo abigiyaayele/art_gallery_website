@@ -5,9 +5,23 @@ import { useRef, useState, type DragEvent } from 'react';
 import { errorMessage } from '../lib/api';
 import { uploadFile, useMedia } from '../lib/catalog';
 
-/** Ordered images for an artwork: the first one is the cover. Uploads run in parallel. */
-export function ImagePicker({ value, onChange }: { value: string[]; onChange: (ids: string[]) => void }) {
-  const media = useMedia('artwork');
+/**
+ * Ordered images: for an artwork the first one is the cover. Uploads run in
+ * parallel. `kind` picks the library (artwork images or website images) and
+ * `max` limits how many can be chosen, e.g. 1 for a logo.
+ */
+export function ImagePicker({
+  value,
+  onChange,
+  kind = 'artwork',
+  max = 24,
+}: {
+  value: string[];
+  onChange: (ids: string[]) => void;
+  kind?: 'artwork' | 'site';
+  max?: number;
+}) {
+  const media = useMedia(kind);
   const qc = useQueryClient();
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(0);
@@ -25,7 +39,7 @@ export function ImagePicker({ value, onChange }: { value: string[]; onChange: (i
     await Promise.all(
       list.map(async f => {
         try {
-          ids.push((await uploadFile(f)).id);
+          ids.push((await uploadFile(f, kind)).id);
         } catch (err) {
           setError(`${f.name}: ${errorMessage(err)}`);
         } finally {
@@ -34,7 +48,7 @@ export function ImagePicker({ value, onChange }: { value: string[]; onChange: (i
       }),
     );
     await qc.invalidateQueries({ queryKey: ['media'] });
-    onChange([...value, ...ids]);
+    onChange([...value, ...ids].slice(-max));
   };
 
   const move = (i: number, d: -1 | 1) => {
@@ -60,7 +74,7 @@ export function ImagePicker({ value, onChange }: { value: string[]; onChange: (i
                 {a.status === 'failed' ? 'Failed' : <Loader2 className="animate-spin" size={18} />}
               </div>
             )}
-            {i === 0 && <span className="absolute left-1 top-1 rounded bg-stone-900/80 px-1.5 text-[10px] text-white">Cover</span>}
+            {i === 0 && kind === 'artwork' && <span className="absolute left-1 top-1 rounded bg-stone-900/80 px-1.5 text-[10px] text-white">Cover</span>}
             <div className="absolute inset-x-0 bottom-0 flex justify-between bg-white/90 p-1 opacity-0 transition group-hover:opacity-100">
               <button type="button" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Move left">
                 <ArrowLeft size={14} />
@@ -74,7 +88,7 @@ export function ImagePicker({ value, onChange }: { value: string[]; onChange: (i
             </div>
           </div>
         ))}
-        <button
+        {value.length < max && <button
           type="button"
           onClick={() => input.current?.click()}
           onDragOver={e => e.preventDefault()}
@@ -83,9 +97,9 @@ export function ImagePicker({ value, onChange }: { value: string[]; onChange: (i
         >
           {uploading ? <Loader2 className="animate-spin" /> : <Upload size={18} />}
           {uploading ? `Uploading ${uploading}…` : 'Drop or upload'}
-        </button>
+        </button>}
       </div>
-      <input ref={input} type="file" accept="image/*" multiple hidden onChange={e => e.target.files && upload(e.target.files)} />
+      <input ref={input} type="file" accept="image/*" multiple={max > 1} hidden onChange={e => e.target.files && upload(e.target.files)} />
       <button type="button" className="text-sm text-stone-600 underline" onClick={() => setShowLibrary(s => !s)}>
         {showLibrary ? 'Hide library' : 'Choose from your image library'}
       </button>
@@ -94,7 +108,7 @@ export function ImagePicker({ value, onChange }: { value: string[]; onChange: (i
           {media.data
             ?.filter(a => a.status === 'ready' && !value.includes(a.id))
             .map(a => (
-              <button type="button" key={a.id} onClick={() => onChange([...value, a.id])} className="overflow-hidden rounded">
+              <button type="button" key={a.id} onClick={() => onChange([...value, a.id].slice(-max))} className="overflow-hidden rounded">
                 <img src={a.urls.thumb} alt={a.altText} className="aspect-square w-full object-cover hover:opacity-80" />
               </button>
             ))}

@@ -1,5 +1,4 @@
 import {
-  BarChart3,
   Brush,
   Building2,
   FolderTree,
@@ -34,7 +33,6 @@ const nav = [
   { to: '/profile', label: 'Profile', icon: User },
   { to: '/assistant', label: 'AI assistant', icon: Sparkles },
   { to: '/goals', label: 'Goals & journal', icon: Target },
-  { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 

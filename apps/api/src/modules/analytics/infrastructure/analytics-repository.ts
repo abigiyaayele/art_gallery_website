@@ -1,6 +1,7 @@
 import { sql } from 'kysely';
 import type { Db } from '../../../shared/db/database.js';
-import type { AnalyticsRepository, OverviewData } from '../application/use-cases.js';
+import type { OverviewData } from '@platform/contracts';
+import type { AnalyticsRepository } from '../application/use-cases.js';
 
 export class KyselyAnalyticsRepository implements AnalyticsRepository {
   constructor(private readonly db: Db) {}

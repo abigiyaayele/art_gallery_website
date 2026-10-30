@@ -13,6 +13,11 @@ import { SoldPage } from './pages/SoldPage';
 import { ComingSoonPage } from './pages/ComingSoonPage';
 import { LoginPage } from './pages/LoginPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { InquiriesPage } from './pages/InquiriesPage';
+import { OverviewPage } from './pages/OverviewPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { ShopPage } from './pages/ShopPage';
+import { WebsitePage } from './pages/WebsitePage';
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
@@ -37,13 +42,17 @@ export function App() {
           </RequireAuth>
         }
       >
-        <Route index element={<ComingSoonPage title="Overview" />} />
+        <Route index element={<OverviewPage />} />
         <Route path="artworks" element={<ArtworksPage />} />
         <Route path="artworks/:id" element={<ArtworkEditorPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="media" element={<MediaPage />} />
         <Route path="pricing" element={<PricingPage />} />
         <Route path="sold" element={<SoldPage />} />
+        <Route path="shop" element={<ShopPage />} />
+        <Route path="inquiries" element={<InquiriesPage />} />
+        <Route path="website" element={<WebsitePage />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="admin/tenants" element={<TenantsPage />} />
         <Route path="*" element={<ComingSoonPage title="Coming soon" />} />

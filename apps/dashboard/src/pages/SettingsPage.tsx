@@ -1,4 +1,4 @@
-import type { DomainDto, Member } from '@platform/contracts';
+import type { DomainDto, Member, PaymentSettingsDto } from '@platform/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
@@ -10,11 +10,12 @@ export function SettingsPage() {
   const { isOwner } = useWorkspace();
   return (
     <>
-      <PageHeader title="Settings" description="Your account, the people in this workspace, and your website's domains." />
+      <PageHeader title="Settings" description="Your account, the people in this workspace, your website's domains and online payments." />
       <div className="grid gap-6 lg:grid-cols-2">
         <PasswordCard />
         <MembersCard canManage={isOwner} />
         <DomainsCard canManage={isOwner} />
+        {isOwner && <PaymentsCard />}
       </div>
     </>
   );
@@ -185,6 +186,63 @@ function DomainsCard({ canManage }: { canManage: boolean }) {
       )}
       <ErrorText error={add.error ?? remove.error} />
       <p className="text-xs text-stone-500">Point your domain's DNS (a CNAME record) at the platform, then connect it here.</p>
+    </div>
+  );
+}
+
+function PaymentsCard() {
+  const qc = useQueryClient();
+  const settings = useQuery({ queryKey: ['payment-settings'], queryFn: () => api<PaymentSettingsDto>('/settings/payments') });
+  const [form, setForm] = useState({ secretKey: '', webhookSecret: '' });
+  const saved = () => {
+    setForm({ secretKey: '', webhookSecret: '' });
+    qc.invalidateQueries({ queryKey: ['payment-settings'] });
+  };
+  const save = useMutation({ mutationFn: () => api('/settings/payments', { method: 'PUT', json: { provider: 'chapa', ...form } }), onSuccess: saved });
+  const remove = useMutation({ mutationFn: () => api('/settings/payments', { method: 'DELETE' }), onSuccess: saved });
+  const s = settings.data;
+
+  return (
+    <div id="payments" className="card space-y-4 lg:col-span-2">
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold">Online payments (Chapa)</h2>
+        {s?.configured ? <Badge tone={s.testMode ? 'amber' : 'green'}>{s.testMode ? 'test mode' : 'live'}</Badge> : <Badge>off</Badge>}
+      </div>
+      <p className="text-sm text-stone-500">
+        Connect your own Chapa account so buyers can pay on your website with Telebirr, CBE Birr or card. Money goes straight to your account.
+        Without it, your site shows an "Inquire to buy" button instead.
+      </p>
+      {s?.configured && (
+        <div className="space-y-1 rounded-md bg-stone-50 p-3 text-sm">
+          <p>Secret key ending in <span className="font-mono">{s.keyHint}</span></p>
+          <p className="text-stone-500">
+            Webhook URL to paste in Chapa (Settings → Webhooks): <span className="break-all font-mono text-stone-800">{s.webhookUrl}</span>
+          </p>
+        </div>
+      )}
+      <form
+        className="grid gap-3 sm:grid-cols-2"
+        onSubmit={e => {
+          e.preventDefault();
+          save.mutate();
+        }}
+      >
+        <Field label="Chapa secret key" hint="Starts with CHASECK_TEST- or CHASECK-.">
+          <input className="input font-mono" required autoComplete="off" value={form.secretKey} onChange={e => setForm({ ...form, secretKey: e.target.value })} />
+        </Field>
+        <Field label="Webhook secret" hint="The secret you set for the webhook in Chapa.">
+          <input className="input font-mono" required autoComplete="off" value={form.webhookSecret} onChange={e => setForm({ ...form, webhookSecret: e.target.value })} />
+        </Field>
+        <div className="flex gap-2 sm:col-span-2">
+          <button className="btn-primary" disabled={save.isPending}>{s?.configured ? 'Replace keys' : 'Turn on payments'}</button>
+          {s?.configured && (
+            <button type="button" className="btn-danger" disabled={remove.isPending} onClick={() => confirm('Turn off online payments?') && remove.mutate()}>
+              Turn off
+            </button>
+          )}
+        </div>
+      </form>
+      <ErrorText error={settings.error ?? save.error ?? remove.error} />
     </div>
   );
 }
