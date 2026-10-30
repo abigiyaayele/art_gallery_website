@@ -63,3 +63,12 @@ describe('tenancy', () => {
     expect(taken.statusCode).toBe(409);
   });
 });
+
+describe('TLS certificate check', () => {
+  it('allows only hosts that belong to an active artist', async () => {
+    const ok = await ctx.app.inject({ method: 'GET', url: '/tls/allowed?domain=seifu.platform.test' });
+    const unknown = await ctx.app.inject({ method: 'GET', url: '/tls/allowed?domain=evil.example.com' });
+    expect(ok.statusCode).toBe(200);
+    expect(unknown.statusCode).toBe(404);
+  });
+});

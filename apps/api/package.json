@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env src/main.ts",
-    "build": "tsup src/main.ts scripts/migrate.ts scripts/seed.ts --format esm --target node20 --clean",
-    "start": "node dist/main.js",
+    "build": "tsup",
+    "start": "node dist/src/main.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:unit": "vitest run src",

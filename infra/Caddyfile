@@ -1,0 +1,21 @@
+{
+	email {$ACME_EMAIL}
+	# Certificates for artist sites (subdomains and custom domains) are issued
+	# on first visit, but only for hosts the API says belong to an active artist.
+	on_demand_tls {
+		ask http://api:4000/tls/allowed
+	}
+}
+
+# The dashboard, with the API under /api.
+app.{$PLATFORM_DOMAIN} {
+	reverse_proxy dashboard:80
+}
+
+# Every artist website: <slug>.<platform domain> and any custom domain pointed here.
+https:// {
+	tls {
+		on_demand
+	}
+	reverse_proxy web:3000
+}

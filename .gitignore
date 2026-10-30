@@ -10,3 +10,4 @@ coverage/
 server/data/
 apps/*/server/data/
 .minio/
+!.env.prod.example

@@ -45,6 +45,13 @@ export async function buildApp(config: Config, container: Container) {
   });
 
   app.get('/health', async () => ({ ok: true }));
+  // Asked by the reverse proxy before it requests a TLS certificate for a host:
+  // only hosts that belong to an active artist get one.
+  app.get('/tls/allowed', async (req, reply) => {
+    const domain = (req.query as { domain?: string }).domain;
+    await container.resolver.resolve(domain);
+    return reply.status(200).send({ ok: true });
+  });
   await app.register(identityRoutes(container.identity, { secureCookies: config.NODE_ENV === 'production' }));
   await app.register(tenancyRoutes(container.tenancy));
   await app.register(mediaRoutes(container.media));
