@@ -36,7 +36,7 @@ export function TenantsPage() {
   return (
     <>
       <PageHeader title="Tenants" description="Onboard a new artist: one workspace, one owner account and a subdomain, ready to brand." />
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
         <div className="card overflow-x-auto p-0">
           <table className="w-full text-sm">
             <thead className="border-b border-stone-200 text-left text-stone-500">

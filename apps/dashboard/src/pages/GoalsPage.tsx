@@ -72,10 +72,10 @@ function Goals() {
         }}
       >
         <Field label="New goal"><input className="input" required placeholder="e.g. Finish the Forest series" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} /></Field>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           <Field label="Target"><input className="input" type="number" min={1} placeholder="10" value={form.target ?? ''} onChange={e => setForm({ ...form, target: e.target.value ? Number(e.target.value) : null })} /></Field>
           <Field label="Unit"><input className="input" placeholder="paintings" value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })} /></Field>
-          <Field label="Due"><input className="input" type="date" value={form.dueDate ?? ''} onChange={e => setForm({ ...form, dueDate: e.target.value || null })} /></Field>
+          <div className="col-span-2 sm:col-span-1"><Field label="Due"><input className="input" type="date" value={form.dueDate ?? ''} onChange={e => setForm({ ...form, dueDate: e.target.value || null })} /></Field></div>
         </div>
         <ErrorText error={create.error ?? update.error ?? remove.error} />
         <button className="btn-primary" disabled={create.isPending}>Add goal</button>

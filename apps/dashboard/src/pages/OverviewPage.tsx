@@ -55,7 +55,7 @@ export function OverviewPage() {
         !overview.error && <Spinner />
       ) : (
         <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             <Stat label="Published works" value={o.artworks.available} to="/artworks" hint={`${o.artworks.draft} drafts · ${o.artworks.onSale} on offer`} />
             <Stat label="Sold this month" value={o.soldThisMonth.count} to="/sold" hint={totals(o.soldThisMonth.totals)} />
             <Stat label="Orders to ship" value={o.orders.toShip} to="/shop" hint={`${o.orders.pending} awaiting payment`} />
