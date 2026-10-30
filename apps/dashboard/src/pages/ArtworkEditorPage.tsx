@@ -199,12 +199,12 @@ export function ArtworkEditorPage() {
       <div className="mt-4 grid gap-6 xl:grid-cols-[1fr_340px]">
         <div className="space-y-6">
           <section className="card space-y-4">
-            <h2 className="font-semibold">Images</h2>
+            <h2 className="display text-2xl">Images</h2>
             <ImagePicker value={form.imageIds} onChange={ids => set('imageIds', ids)} />
           </section>
 
           <section className="card space-y-4">
-            <h2 className="font-semibold">Details</h2>
+            <h2 className="display text-2xl">Details</h2>
             <Field label="Title">
               <input className="input" required maxLength={200} {...text('title')} />
             </Field>
@@ -246,7 +246,7 @@ export function ArtworkEditorPage() {
           </section>
 
           <section className="card space-y-4">
-            <h2 className="font-semibold">Search engines</h2>
+            <h2 className="display text-2xl">Search engines</h2>
             <Field label="SEO title" hint={`${form.seoTitle.length}/70. Leave empty to use the title.`}>
               <input className="input" maxLength={70} {...text('seoTitle')} />
             </Field>
@@ -258,7 +258,7 @@ export function ArtworkEditorPage() {
 
         <aside className="space-y-6">
           <section className="card space-y-4">
-            <h2 className="font-semibold">Price</h2>
+            <h2 className="display text-2xl">Price</h2>
             <div className="grid grid-cols-[1fr_90px] gap-2">
               <Field label="Price">
                 <input className="input" inputMode="decimal" placeholder="1200" {...text('price')} />

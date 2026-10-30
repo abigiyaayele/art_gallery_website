@@ -32,7 +32,7 @@ function Goals() {
 
   return (
     <div className="card space-y-4">
-      <h2 className="font-semibold">Goals</h2>
+      <h2 className="display text-2xl">Goals</h2>
       <ul className="space-y-3">
         {goals.data?.map(g => {
           const pct = g.target ? Math.min(100, Math.round((g.current / g.target) * 100)) : null;
@@ -50,7 +50,7 @@ function Goals() {
               </div>
               {pct !== null && (
                 <div className="mt-2 flex items-center gap-3">
-                  <div className="h-2 flex-1 rounded-full bg-stone-100"><div className="h-2 rounded-full bg-stone-800" style={{ width: `${pct}%` }} /></div>
+                  <div className="h-2 flex-1 rounded-full bg-stone-100"><div className="h-2 rounded-full bg-accent-500" style={{ width: `${pct}%` }} /></div>
                   <span className="text-xs tabular-nums text-stone-600">{g.current}/{g.target} {g.unit}</span>
                 </div>
               )}
@@ -100,7 +100,7 @@ function Journal() {
   return (
     <div className="card space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold">Journal</h2>
+        <h2 className="display text-2xl">Journal</h2>
         {usage.data?.configured && (
           <button className="btn-secondary" disabled={summary.isPending} onClick={() => summary.mutate()}>
             <Sparkles size={14} /> {summary.isPending ? 'Writing…' : 'Weekly summary'}

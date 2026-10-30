@@ -41,7 +41,7 @@ export function ShopPage() {
       />
       <div className="mb-4 flex flex-wrap gap-2">
         {filters.map(f => (
-          <button key={f.value} onClick={() => setStatus(f.value)} className={`rounded-full px-3 py-1 text-sm ${status === f.value ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 ring-1 ring-stone-200'}`}>
+          <button key={f.value} onClick={() => setStatus(f.value)} className={status === f.value ? 'chip-active' : 'chip'}>
             {f.label}
           </button>
         ))}
@@ -54,7 +54,7 @@ export function ShopPage() {
       ) : (
         <div className="card overflow-x-auto p-0">
           <table className="w-full text-sm">
-            <thead className="border-b border-stone-200 text-left text-xs uppercase text-stone-500">
+            <thead className="eyebrow border-b border-stone-200 bg-stone-50 text-left">
               <tr>
                 <th className="px-4 py-3">Order</th>
                 <th className="px-4 py-3">Buyer</th>

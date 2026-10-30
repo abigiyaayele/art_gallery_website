@@ -39,7 +39,7 @@ function PasswordCard() {
         change.mutate();
       }}
     >
-      <h2 className="font-semibold">Password</h2>
+      <h2 className="display text-2xl">Password</h2>
       <Field label="Current password">
         <input className="input" type="password" required value={currentPassword} onChange={e => setCurrent(e.target.value)} />
       </Field>
@@ -74,7 +74,7 @@ function MembersCard({ canManage }: { canManage: boolean }) {
 
   return (
     <div className="card space-y-4">
-      <h2 className="font-semibold">Members</h2>
+      <h2 className="display text-2xl">Members</h2>
       <ul className="divide-y divide-stone-100">
         {members.data?.map(m => (
           <li key={m.userId} className="flex items-center justify-between py-2 text-sm">
@@ -148,7 +148,7 @@ function DomainsCard({ canManage }: { canManage: boolean }) {
 
   return (
     <div className="card space-y-4">
-      <h2 className="font-semibold">Domains</h2>
+      <h2 className="display text-2xl">Domains</h2>
       <ul className="space-y-2 text-sm">
         {domains.data?.map(d => (
           <li key={d.id} className="flex items-center justify-between">
@@ -205,7 +205,7 @@ function PaymentsCard() {
   return (
     <div id="payments" className="card space-y-4 lg:col-span-2">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold">Online payments (Chapa)</h2>
+        <h2 className="display text-2xl">Online payments (Chapa)</h2>
         {s?.configured ? <Badge tone={s.testMode ? 'amber' : 'green'}>{s.testMode ? 'test mode' : 'live'}</Badge> : <Badge>off</Badge>}
       </div>
       <p className="text-sm text-stone-500">

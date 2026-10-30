@@ -37,7 +37,7 @@ export function WebsitePage() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm capitalize ${tab === t.key ? 'border-stone-900 font-medium' : 'border-transparent text-stone-500 hover:text-stone-800'}`}
+            className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm capitalize ${tab === t.key ? 'border-accent-500 font-medium text-stone-900' : 'border-transparent text-stone-500 hover:text-stone-800'}`}
           >
             {t.label}
           </button>
@@ -83,7 +83,7 @@ function LookEditor() {
             type="button"
             key={key}
             onClick={() => setForm({ ...form, themeKey: key })}
-            className={`card text-left transition ${form.themeKey === key ? 'ring-2 ring-stone-900' : 'hover:border-stone-400'}`}
+            className={`card text-left transition ${form.themeKey === key ? 'border-stone-900 ring-2 ring-stone-900' : 'hover:-translate-y-0.5 hover:shadow-lift'}`}
           >
             <div className="mb-3 flex gap-1">
               {themeInfo[key].swatch.map(c => <span key={c} className="h-6 w-6 rounded-full border border-stone-200" style={{ background: c }} />)}
@@ -96,7 +96,7 @@ function LookEditor() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="card space-y-4">
-          <h2 className="font-semibold">Branding</h2>
+          <h2 className="display text-2xl">Branding</h2>
           <Field label="Site title"><input className="input" value={form.branding.siteTitle} onChange={e => branding({ siteTitle: e.target.value })} /></Field>
           <div>
             <span className="label">Logo (optional)</span>
@@ -122,7 +122,7 @@ function LookEditor() {
           </div>
         </div>
         <div className="card space-y-4">
-          <h2 className="font-semibold">Search engines and sharing</h2>
+          <h2 className="display text-2xl">Search engines and sharing</h2>
           <Field label="Page title" hint="Up to 70 characters."><input className="input" maxLength={70} value={form.seo.title} onChange={e => setForm({ ...form, seo: { ...form.seo, title: e.target.value } })} /></Field>
           <Field label="Description" hint="Up to 170 characters."><textarea className="input" rows={3} maxLength={170} value={form.seo.description} onChange={e => setForm({ ...form, seo: { ...form.seo, description: e.target.value } })} /></Field>
         </div>
@@ -161,7 +161,7 @@ function PageEditor({ page }: { page: SitePageDto }) {
         </div>
       </div>
       <div className="card">
-        <h2 className="mb-4 font-semibold">Content</h2>
+        <h2 className="display mb-4 text-2xl">Content</h2>
         <BlockEditor blocks={form.blocks} onChange={blocks => setForm({ ...form, blocks })} />
       </div>
       <ErrorText error={save.error} />

@@ -34,7 +34,7 @@ export function SoldPage() {
       ) : (
         <div className="card overflow-x-auto p-0">
           <table className="w-full text-sm">
-            <thead className="border-b border-stone-200 text-left text-stone-500">
+            <thead className="eyebrow border-b border-stone-200 bg-stone-50 text-left">
               <tr>
                 <th className="px-4 py-3 font-medium">Artwork</th>
                 <th className="px-4 py-3 font-medium">Sold on</th>

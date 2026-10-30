@@ -52,7 +52,7 @@ export function AiCopyPanel({ artwork }: { artwork: ArtworkDto }) {
   if (usage.data && !usage.data.configured) {
     return (
       <section className="card space-y-1 text-sm">
-        <h2 className="flex items-center gap-2 font-semibold"><Sparkles size={16} /> Write with AI</h2>
+        <h2 className="display flex items-center gap-2 text-2xl"><Sparkles size={16} /> Write with AI</h2>
         <p className="text-stone-500">The AI assistant is not set up on this platform yet.</p>
       </section>
     );
@@ -70,7 +70,7 @@ export function AiCopyPanel({ artwork }: { artwork: ArtworkDto }) {
 
   return (
     <section className="card space-y-3">
-      <h2 className="flex items-center gap-2 font-semibold"><Sparkles size={16} /> Write with AI</h2>
+      <h2 className="display flex items-center gap-2 text-2xl"><Sparkles size={16} /> Write with AI</h2>
       {!draft ? (
         <>
           <p className="text-sm text-stone-500">Get title ideas, a description, a story and tags from the image and details. You choose what to keep.</p>

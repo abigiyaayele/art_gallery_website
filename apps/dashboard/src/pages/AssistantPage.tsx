@@ -81,13 +81,13 @@ function ChatCard() {
             <p className="flex items-center gap-2 text-sm text-stone-500"><Sparkles size={16} /> Try one of these:</p>
             <div className="flex flex-wrap gap-2">
               {starters.map(s => (
-                <button key={s} className="rounded-full border border-stone-300 px-3 py-1 text-sm hover:bg-stone-100" onClick={() => ask(s)}>{s}</button>
+                <button key={s} className="chip text-left" onClick={() => ask(s)}>{s}</button>
               ))}
             </div>
           </div>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={`max-w-[85%] whitespace-pre-line rounded-xl px-4 py-2.5 text-sm ${m.role === 'user' ? 'ml-auto bg-stone-900 text-white' : 'bg-stone-100'}`}>
+          <div key={i} className={`max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${m.role === 'user' ? 'ml-auto rounded-br-md bg-stone-900 text-stone-50' : 'rounded-bl-md bg-stone-100 text-stone-800'}`}>
             {m.content}
           </div>
         ))}
@@ -123,7 +123,7 @@ function IdeasCard() {
 
   return (
     <div className="card space-y-4">
-      <h2 className="flex items-center gap-2 font-semibold"><Lightbulb size={16} /> Ideas for new work</h2>
+      <h2 className="display flex items-center gap-2 text-2xl"><Lightbulb size={16} /> Ideas for new work</h2>
       <form
         className="flex gap-2"
         onSubmit={e => {
