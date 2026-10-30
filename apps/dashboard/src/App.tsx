@@ -1,0 +1,66 @@
+import type { ReactNode } from 'react';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { Layout } from './components/Layout';
+import { Spinner } from './components/ui';
+import { useAuth } from './lib/auth';
+import { TenantsPage } from './pages/admin/TenantsPage';
+import { ArtworkEditorPage } from './pages/ArtworkEditorPage';
+import { ArtworksPage } from './pages/ArtworksPage';
+import { CategoriesPage } from './pages/CategoriesPage';
+import { MediaPage } from './pages/MediaPage';
+import { PricingPage } from './pages/PricingPage';
+import { SoldPage } from './pages/SoldPage';
+import { NotFoundPage } from './pages/NotFoundPage';
+import { LoginPage } from './pages/LoginPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { InquiriesPage } from './pages/InquiriesPage';
+import { OverviewPage } from './pages/OverviewPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { ShopPage } from './pages/ShopPage';
+import { WebsitePage } from './pages/WebsitePage';
+import { AssistantPage } from './pages/AssistantPage';
+import { GoalsPage } from './pages/GoalsPage';
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { session, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+  return session ? children : <Navigate to="/login" replace />;
+}
+
+export function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        element={
+          <RequireAuth>
+            <Layout />
+          </RequireAuth>
+        }
+      >
+        <Route index element={<OverviewPage />} />
+        <Route path="artworks" element={<ArtworksPage />} />
+        <Route path="artworks/:id" element={<ArtworkEditorPage />} />
+        <Route path="categories" element={<CategoriesPage />} />
+        <Route path="media" element={<MediaPage />} />
+        <Route path="pricing" element={<PricingPage />} />
+        <Route path="sold" element={<SoldPage />} />
+        <Route path="shop" element={<ShopPage />} />
+        <Route path="inquiries" element={<InquiriesPage />} />
+        <Route path="website" element={<WebsitePage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="assistant" element={<AssistantPage />} />
+        <Route path="goals" element={<GoalsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="admin/tenants" element={<TenantsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
+  );
+}

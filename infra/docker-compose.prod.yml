@@ -1,0 +1,77 @@
+# One-server production setup. Copy infra/.env.prod.example to infra/.env.prod,
+# fill it in, then: docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: platform
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: platform
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'platform']
+      interval: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
+    volumes: [miniodata:/data]
+
+  api:
+    image: ${IMAGE_PREFIX:-ghcr.io/abigiyaayele/art-platform}-api:${TAG:-latest}
+    build: { context: .., dockerfile: apps/api/Dockerfile }
+    restart: unless-stopped
+    depends_on:
+      postgres: { condition: service_healthy }
+      minio: { condition: service_started }
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://platform:${POSTGRES_PASSWORD}@postgres:5432/platform
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      PLATFORM_DOMAIN: ${PLATFORM_DOMAIN}
+      DASHBOARD_ORIGIN: https://app.${PLATFORM_DOMAIN}
+      PUBLIC_API_URL: https://app.${PLATFORM_DOMAIN}/api
+      SITE_URL_TEMPLATE: https://{host}
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+  web:
+    image: ${IMAGE_PREFIX:-ghcr.io/abigiyaayele/art-platform}-web:${TAG:-latest}
+    build: { context: .., dockerfile: apps/web/Dockerfile }
+    restart: unless-stopped
+    environment:
+      API_URL: http://api:4000
+
+  dashboard:
+    image: ${IMAGE_PREFIX:-ghcr.io/abigiyaayele/art-platform}-dashboard:${TAG:-latest}
+    build: { context: .., dockerfile: apps/dashboard/Dockerfile }
+    restart: unless-stopped
+    environment:
+      API_UPSTREAM: http://api:4000
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment:
+      PLATFORM_DOMAIN: ${PLATFORM_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+
+volumes:
+  pgdata:
+  miniodata:
+  caddydata:
