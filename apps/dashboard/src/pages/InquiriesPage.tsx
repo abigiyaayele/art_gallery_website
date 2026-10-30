@@ -24,7 +24,7 @@ export function InquiriesPage() {
       <PageHeader title="Inquiries" description="Messages and commission requests sent from your website." />
       <div className="mb-4 flex gap-2">
         {(['new', 'replied', 'archived'] as const).map(s => (
-          <button key={s} onClick={() => setStatus(s)} className={`rounded-full px-3 py-1 text-sm capitalize ${status === s ? 'bg-stone-900 text-white' : 'bg-white text-stone-700 ring-1 ring-stone-200'}`}>
+          <button key={s} onClick={() => setStatus(s)} className={`capitalize ${status === s ? 'chip-active' : 'chip'}`}>
             {s}
           </button>
         ))}

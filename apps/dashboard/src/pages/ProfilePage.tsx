@@ -48,11 +48,11 @@ export function ProfilePage() {
         </div>
         <div className="space-y-6">
           <div className="card space-y-3">
-            <h2 className="font-semibold">Photo</h2>
+            <h2 className="display text-2xl">Photo</h2>
             <ImagePicker kind="site" max={1} value={form.photoAssetId ? [form.photoAssetId] : []} onChange={ids => set({ photoAssetId: ids[0] ?? null })} />
           </div>
           <div className="card space-y-3">
-            <h2 className="font-semibold">Contact</h2>
+            <h2 className="display text-2xl">Contact</h2>
             <Field label="Email"><input className="input" type="email" value={form.email} onChange={e => set({ email: e.target.value })} /></Field>
             <Field label="Phone"><input className="input" value={form.phone} onChange={e => set({ phone: e.target.value })} /></Field>
             <Field label="City or region"><input className="input" value={form.location} onChange={e => set({ location: e.target.value })} /></Field>
@@ -60,7 +60,7 @@ export function ProfilePage() {
             <Field label="Opening hours"><input className="input" value={form.hours} onChange={e => set({ hours: e.target.value })} /></Field>
           </div>
           <div className="card space-y-3">
-            <h2 className="font-semibold">Social links</h2>
+            <h2 className="display text-2xl">Social links</h2>
             {form.socialLinks.map((link, i) => (
               <div key={i} className="flex gap-2">
                 <input className="input w-28" placeholder="Label" value={link.label} onChange={e => set({ socialLinks: form.socialLinks.map((l, j) => (j === i ? { ...l, label: e.target.value } : l)) })} />

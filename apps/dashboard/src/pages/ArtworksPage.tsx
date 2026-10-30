@@ -67,7 +67,7 @@ export function ArtworksPage() {
       </div>
 
       {selected.size > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg bg-stone-900 px-4 py-2 text-sm text-white">
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-stone-900 px-4 py-2.5 text-sm text-stone-50 shadow-lift">
           <span>{selected.size} selected</span>
           {[
             ['publish', 'Publish'],
@@ -115,11 +115,11 @@ export function ArtworksPage() {
 function ArtworkTile({ artwork: a, selected, onToggle }: { artwork: ArtworkDto; selected: boolean; onToggle: () => void }) {
   const cover = a.images[0]?.urls.thumb;
   return (
-    <div className={`group relative overflow-hidden rounded-xl border bg-white ${selected ? 'border-stone-900 ring-2 ring-stone-900' : 'border-stone-200'}`}>
+    <div className={`group relative overflow-hidden rounded-2xl border bg-white shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift ${selected ? 'border-stone-900 ring-2 ring-stone-900' : 'border-stone-200/80'}`}>
       <input type="checkbox" checked={selected} onChange={onToggle} className="absolute left-2 top-2 z-10 h-4 w-4" aria-label={`Select ${a.title}`} />
       <Link to={`/artworks/${a.id}`}>
         <div className="flex aspect-square items-center justify-center bg-stone-100">
-          {cover ? <img src={cover} alt={a.title} className="h-full w-full object-cover" loading="lazy" /> : <ImageOff className="text-stone-400" />}
+          {cover ? <img src={cover} alt={a.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" /> : <ImageOff className="text-stone-400" />}
         </div>
         <div className="space-y-1 p-3">
           <p className="truncate font-medium">{a.title}</p>
