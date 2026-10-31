@@ -90,7 +90,66 @@ Checks: `pnpm typecheck`, `pnpm lint`, `pnpm test` (API tests need the `platform
    variables; fall back to your defaults.
 4. Describe it in `themeInfo` in `apps/dashboard/src/pages/WebsitePage.tsx` so artists can pick it.
 
-## Deploy
+## Deploy on Vercel
+
+All three apps run on Vercel as three projects from this repository. Vercel has no database or
+image storage of its own that fits, so Postgres and S3-compatible storage come from
+[Supabase](https://supabase.com) (one free project covers both).
+
+| Vercel project | Root Directory | What it is |
+| --- | --- | --- |
+| `seifu-api` | `apps/api` | The API as one Vercel function (`api/index.js`, built from `src/vercel.ts`) |
+| `seifu-arts` | `apps/web` | The public website; `api/proxy.ts` forwards `/api/*` to the API |
+| `seifu-dashboard` | `apps/dashboard` | The dashboard; `api/proxy.ts` forwards `/api/*` so the login cookie stays same-origin |
+
+Each app's `vercel.json` holds its build settings, so on import only the Root Directory needs
+choosing. Pushing to `main` deploys all three; pull requests get preview deploys.
+
+**1. Supabase.** Create a project. From *Connect*, copy the *Transaction pooler* URI (port 6543)
+and the *Session pooler* URI (port 5432). In *Storage*, create a private bucket named
+`artist-platform`, then under *Storage → S3 Connection* create an access key and note the endpoint
+and region.
+
+**2. API project** (`apps/api`). Environment variables:
+
+```
+NODE_ENV=production
+DATABASE_URL=<transaction pooler URI>
+MIGRATION_DATABASE_URL=<session pooler URI>
+JWT_SECRET=<openssl rand -base64 48>
+ENCRYPTION_KEY=<openssl rand -base64 32, never change it>
+STORAGE_DRIVER=s3
+S3_ENDPOINT=<Supabase S3 endpoint>   S3_REGION=<region>   S3_BUCKET=artist-platform
+S3_ACCESS_KEY=<key id>               S3_SECRET_KEY=<secret>
+PUBLIC_API_URL=https://seifu-api.vercel.app
+DASHBOARD_ORIGIN=https://seifu-dashboard.vercel.app
+SITE_URL_TEMPLATE=https://seifu-arts.vercel.app
+PLATFORM_DOMAIN=<your domain, or a placeholder such as seifu-arts.local>
+ADMIN_EMAIL=<you>   ADMIN_PASSWORD=<strong password>
+SEED_DEMO_TENANTS=true      # creates the "seifu" workspace on the first deploy
+ANTHROPIC_API_KEY=          # optional, turns on the AI assistant
+```
+
+Every production deploy runs the migrations and makes sure the admin exists
+(`scripts/vercel-release.sh`); preview deploys leave the database alone. Background jobs run inline
+(`JOB_DRIVER=inline`) because Vercel has no long-running worker. Uploads over 4 MB are scaled down
+in the browser first, because Vercel caps request bodies at 4.5 MB.
+
+**3. Website project** (`apps/web`): `API_URL=https://seifu-api.vercel.app` and
+`SITE_TENANT_HOST=seifu.<PLATFORM_DOMAIN>`. The pin is what tells the API that visitors to the
+`vercel.app` address want Seifu's site. Once the site has its own domain (added in the dashboard's
+Settings and in Vercel), remove `SITE_TENANT_HOST` and the visitor's host picks the artist again.
+
+**4. Dashboard project** (`apps/dashboard`): `API_URL=https://seifu-api.vercel.app`.
+
+**5. Seifu's paintings.** Add the API's `DATABASE_URL` (session pooler), `JWT_SECRET`,
+`ENCRYPTION_KEY` and `S3_*` values as GitHub Actions secrets, then run *Actions → Import Seifu's
+paintings* once.
+
+Then sign in to the dashboard as `seifu@example.com` / `seifu-demo-password` and change the
+password straight away.
+
+## Deploy on your own server
 
 `infra/docker-compose.prod.yml` runs everything on one server: Postgres, MinIO, the API (migrates on
 start), the sites server, the dashboard (nginx, proxying `/api`), and Caddy for HTTPS. Caddy issues
