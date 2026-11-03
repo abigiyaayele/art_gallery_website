@@ -1,6 +1,7 @@
 import type { ArtworkDto, ArtworkStatus, AssetDto, CategoryDto, Page } from '@platform/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
+import { shrinkImage } from './shrink-image';
 
 export function useArtworks(params: { status?: ArtworkStatus; categoryId?: string; onSale?: boolean; q?: string } = {}) {
   const search = new URLSearchParams();
@@ -30,7 +31,7 @@ export function useMedia(kind?: 'artwork' | 'site') {
 
 export async function uploadFile(file: File, kind: 'artwork' | 'site' = 'artwork') {
   const form = new FormData();
-  form.append('file', file);
+  form.append('file', await shrinkImage(file));
   return api<AssetDto>(`/media?kind=${kind}`, { method: 'POST', body: form });
 }
 

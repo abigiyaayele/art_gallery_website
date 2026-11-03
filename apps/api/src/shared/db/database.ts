@@ -4,8 +4,8 @@ import type { Database } from './schema.js';
 
 export type Db = Kysely<Database>;
 
-export function createDb(connectionString: string): Db {
+export function createDb(connectionString: string, maxConnections = 10): Db {
   return new Kysely<Database>({
-    dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString, max: 10 }) }),
+    dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString, max: maxConnections }) }),
   });
 }
